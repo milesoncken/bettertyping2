@@ -3,12 +3,14 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.33.0",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "pnpm -r build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --build --force",
+    "typecheck": "tsc --build --force && tsc -p apps/web --noEmit",
     "lint": "eslint .",
     "format": "prettier --write ."
   },

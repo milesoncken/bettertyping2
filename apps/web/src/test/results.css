@@ -1,0 +1,56 @@
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: flex-start;
+  justify-content: center;
+  /* Occupies the same box the text field did, so the trace stays put beneath it.
+     Stage 3's detach animation depends on that anchor not moving. */
+  flex: 1;
+  min-height: 0;
+  padding-left: 4.6rem;
+}
+
+.results-head {
+  display: flex;
+  gap: 1.25rem;
+  align-items: baseline;
+}
+
+.results-primary {
+  display: flex;
+  gap: 3rem;
+  flex-wrap: wrap;
+}
+
+.figure b {
+  display: block;
+  font-family: var(--f-label);
+  font-weight: 700;
+  font-size: clamp(2.4rem, 6vw, 3.6rem);
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+}
+
+.figure[data-lit] b {
+  color: var(--data-fast);
+}
+
+.figure .label {
+  display: block;
+  margin-top: 0.6rem;
+}
+
+.results-chars {
+  display: flex;
+  gap: 2rem;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.pair dd {
+  margin: 0.35rem 0 0;
+  font-family: var(--f-data);
+  font-size: 0.95rem;
+  color: var(--text-mid);
+}

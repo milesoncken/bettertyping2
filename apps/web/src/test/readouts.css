@@ -1,0 +1,27 @@
+.readouts {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.readout {
+  text-align: right;
+}
+
+.readout b {
+  display: block;
+  font-family: var(--f-data);
+  font-weight: 500;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--text);
+}
+
+.readout[data-lit] b {
+  color: var(--data-fast);
+}
+
+.readout .label {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.56rem;
+}

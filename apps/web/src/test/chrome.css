@@ -1,0 +1,68 @@
+.frame {
+  position: absolute;
+  inset: var(--frame-inset);
+  border: 1px solid var(--rule);
+  pointer-events: none;
+}
+
+.frame i {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--rule-lit);
+}
+
+.frame i:nth-child(1) {
+  left: -1px;
+  top: -1px;
+  border-right: 0;
+  border-bottom: 0;
+}
+.frame i:nth-child(2) {
+  right: -1px;
+  top: -1px;
+  border-left: 0;
+  border-bottom: 0;
+}
+.frame i:nth-child(3) {
+  left: -1px;
+  bottom: -1px;
+  border-right: 0;
+  border-top: 0;
+}
+.frame i:nth-child(4) {
+  right: -1px;
+  bottom: -1px;
+  border-left: 0;
+  border-top: 0;
+}
+
+.rail {
+  position: relative;
+  width: 3.2rem;
+  height: 100%;
+  flex: none;
+  border-right: 1px solid var(--rule);
+}
+
+.tick {
+  position: absolute;
+  right: 0;
+  width: 6px;
+  height: 1px;
+  background: var(--rule);
+}
+
+.tick[data-major] {
+  width: 13px;
+  background: var(--rule-lit);
+}
+
+.tick-label {
+  position: absolute;
+  right: 17px;
+  transform: translateY(-50%);
+  font-family: var(--f-data);
+  font-size: 0.55rem;
+  color: var(--text-dim);
+}

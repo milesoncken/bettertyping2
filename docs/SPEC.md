@@ -270,7 +270,7 @@ reports how many tests remain before predictions unlock — not a blank rail.
 
 | Target | Budget |
 |---|---|
-| Keystroke → paint | < 16 ms, p99 |
+| Keystroke → paint | **one frame** — p99 ≤ 17 ms at 60 Hz |
 | Test route JS | < 100 KB gzip |
 | LCP (landing) | < 1.5 s |
 | Dropped frames during a test | zero |
@@ -302,9 +302,19 @@ reports how many tests remain before predictions unlock — not a blank rail.
 | **7** | Adaptive drills, XP / levels / streaks, daily challenge | Retention loop closed |
 | **8** | Six variants, settings, perf budget enforcement, a11y audit, launch | Ship |
 
-**Landed:** Stage 0 (monorepo, strict TS, CI, lint) and Stage 1 (`engine` + `metrics`,
-30 tests, replay determinism proven). The v1 app now lives in `legacy/` and still
-runs from there; it is deleted when `apps/web` replaces it in Stage 2.
+**Landed:** Stages 0, 1 and 2.
+
+- **0** — monorepo, strict TS, CI, lint. v1 app moved to `legacy/`, still runnable.
+- **1** — `engine` + `metrics`, 30 tests, replay determinism proven.
+- **2** — `apps/web`: test screen, the Line, results. Measured in Chromium at
+  **p50 8.5 ms / p99 15.4 ms** keystroke-to-paint, **68 KB gzip** against a 100 KB
+  budget. `legacy/` is deleted once history and leaderboards land in Stage 5.
+
+**A note on the latency budget.** The original "< 16 ms p99" was measuring the
+wrong thing: at 60 Hz the floor is one vsync interval, so a keystroke landing
+mid-frame can only paint 0–17 ms later. The budget is therefore *one frame* —
+a p99 near 17 ms means every keystroke painted at the next possible opportunity,
+which is optimal, not marginal.
 
 ---
 

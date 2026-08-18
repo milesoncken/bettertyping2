@@ -1,0 +1,32 @@
+.word {
+  display: inline-block;
+  margin-right: 0.62ch;
+  white-space: nowrap;
+}
+
+.char {
+  color: var(--text-dim);
+  transition: color 90ms linear;
+}
+
+/* Colour on characters is the one sanctioned exception to the monochrome rule:
+   a wrong letter is data about your hands, not decoration. */
+.char[data-status="correct"] {
+  color: var(--text);
+}
+
+.char[data-status="incorrect"] {
+  color: var(--data-slow);
+}
+
+.char[data-status="extra"] {
+  color: var(--data-slow);
+  opacity: 0.55;
+}
+
+.char[data-status="missed"] {
+  color: var(--text-dim);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--data-slow) 55%, transparent);
+  text-underline-offset: 4px;
+}

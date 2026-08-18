@@ -1,0 +1,40 @@
+.modebar {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  flex-wrap: wrap;
+}
+
+.group {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.chip {
+  font-family: var(--f-label);
+  font-weight: 700;
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 0.34rem 0.7rem;
+  border: 1px solid var(--rule);
+  color: var(--text-dim);
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
+}
+
+.chip:hover {
+  color: var(--text-mid);
+  border-color: var(--rule-lit);
+}
+
+/* Selection is shown with weight and contrast, never with the data ramp. */
+.chip[data-on] {
+  color: var(--text);
+  border-color: var(--text-dim);
+}
+
+.restart {
+  margin-left: auto;
+}

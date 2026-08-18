@@ -1,0 +1,32 @@
+/*
+ * E1 "Telemetry" — the locked art direction.
+ *
+ * The governing rule: the interface is monochrome, and colour belongs
+ * exclusively to data. The spectral ramp encodes speed and appears only on the
+ * trace, the caret, the heatmap and data marks. It never touches a background,
+ * a button, a heading or a border. Break that rule and this stops reading as an
+ * instrument.
+ */
+
+:root {
+  --ground: #06080c;
+  --panel: #0a0e14;
+  --rule: #161c24;
+  --rule-lit: #3a4759;
+  --text: #e7eef7;
+  --text-dim: #5b6b80;
+  --text-mid: #8b9aad;
+
+  /* Data only. */
+  --data-fast: #35e8ff;
+  --data-mid: #7a6bff;
+  --data-slow: #ff3db8;
+
+  --f-label: "IBM Plex Sans Condensed", system-ui, sans-serif;
+  --f-data: "Azeret Mono", ui-monospace, monospace;
+  --f-text: "IBM Plex Mono", ui-monospace, monospace;
+
+  --test-size: clamp(1.05rem, 2.1vw, 1.6rem);
+  --test-line: 2.05;
+  --frame-inset: 18px;
+}

@@ -1,0 +1,26 @@
+.line-wrap {
+  position: relative;
+  height: 120px;
+  flex: none;
+}
+
+.line-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.line-legend {
+  position: absolute;
+  right: 0;
+  bottom: -2px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.line-ramp {
+  width: 64px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--data-slow), var(--data-mid), var(--data-fast));
+}
