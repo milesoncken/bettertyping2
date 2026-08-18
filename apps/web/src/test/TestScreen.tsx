@@ -2,6 +2,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { TestConfig } from "@bettertyping/engine";
 import { useTypingTest } from "./useTypingTest.js";
 import { Words } from "./Words.js";
+import { Caret } from "./Caret.js";
+import type { CaretTarget } from "./Caret.js";
 import { Readouts } from "./Readouts.js";
 import { Frame, Rail } from "./Chrome.js";
 import { ModeBar } from "./ModeBar.js";
@@ -40,7 +42,7 @@ export function TestScreen(): React.JSX.Element {
   const testAnchorRef = useRef<HTMLDivElement>(null);
   const chartAnchorRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
-  const caretRef = useRef<HTMLDivElement>(null);
+  const caretTargetRef = useRef<CaretTarget | null>(null);
 
   const finished = state.phase === "finished";
 
@@ -66,8 +68,7 @@ export function TestScreen(): React.JSX.Element {
    */
   useLayoutEffect(() => {
     const track = trackRef.current;
-    const caret = caretRef.current;
-    if (!track || !caret) return;
+    if (!track) return;
 
     const activeWord = track.querySelector<HTMLElement>("[data-active]");
     if (!activeWord) return;
@@ -75,18 +76,23 @@ export function TestScreen(): React.JSX.Element {
     const chars = activeWord.querySelectorAll<HTMLElement>(".char");
     const target = chars[state.cursor.char];
 
+    // The caret's box comes from the character's box, so it lands on the text
+    // rather than on an assumption about the line.
     let x: number;
     let y: number;
+    let h: number;
     if (target) {
       x = target.offsetLeft;
       y = target.offsetTop;
+      h = target.offsetHeight;
     } else {
       const last = chars[chars.length - 1];
       x = last ? last.offsetLeft + last.offsetWidth : activeWord.offsetLeft;
       y = last ? last.offsetTop : activeWord.offsetTop;
+      h = last ? last.offsetHeight : activeWord.offsetHeight;
     }
 
-    caret.style.transform = `translate(${x}px, ${y}px)`;
+    caretTargetRef.current = { x, y, h };
 
     const lineHeight = activeWord.offsetHeight;
     const line = Math.round(activeWord.offsetTop / Math.max(1, lineHeight));
@@ -140,11 +146,7 @@ export function TestScreen(): React.JSX.Element {
           <section className="field">
             <div className="viewport" data-idle={state.phase === "idle" || undefined}>
               <div className="track" ref={trackRef}>
-                <div
-                  className="caret"
-                  ref={caretRef}
-                  data-idle={state.phase === "idle" || undefined}
-                />
+                <Caret targetRef={caretTargetRef} idle={state.phase === "idle"} />
                 <Words words={state.words} cursorWord={state.cursor.word} />
               </div>
             </div>

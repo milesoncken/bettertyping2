@@ -6,7 +6,8 @@
 
 .char {
   color: var(--text-dim);
-  transition: color 90ms linear;
+  /* No transition. The letter you just typed must commit on the same frame as
+     the keystroke, or the whole test feels laggy regardless of real latency. */
 }
 
 /* Colour on characters is the one sanctioned exception to the monochrome rule:
