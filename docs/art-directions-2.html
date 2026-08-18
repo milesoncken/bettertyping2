@@ -1,0 +1,487 @@
+<title>bettertyping Futurist Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&display=swap">
+
+<style>
+  :root {
+    --g-bg:     #EDEEF0;
+    --g-rule:   #CFD2D8;
+    --g-text:   #14161A;
+    --g-dim:    #4E545F;
+    --g-mute:   #838A96;
+    --g-chrome: "IBM Plex Mono", ui-monospace, monospace;
+    --g-disp:   "Bricolage Grotesque", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --g-bg: #0E1013; --g-rule: #2A2F37; --g-text: #EDEFF3; --g-dim: #A9B0BC; --g-mute: #6E7784;
+    }
+  }
+  :root[data-theme="dark"] {
+    --g-bg: #0E1013; --g-rule: #2A2F37; --g-text: #EDEFF3; --g-dim: #A9B0BC; --g-mute: #6E7784;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--g-bg); color: var(--g-text);
+    font-family: var(--g-chrome); font-size: 15px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 1.25rem 7rem; }
+
+  .masthead { padding: 4.5rem 0 2.5rem; border-bottom: 1px solid var(--g-rule); }
+  .kicker { font-size: .68rem; letter-spacing: .2em; text-transform: uppercase; color: var(--g-mute); margin: 0 0 1.4rem; }
+  .masthead h1 {
+    font-family: var(--g-disp); font-weight: 800; font-size: clamp(2rem, 6vw, 3.2rem);
+    line-height: 1.03; letter-spacing: -.025em; margin: 0 0 1.4rem; max-width: 24ch; text-wrap: balance;
+  }
+  .standfirst { font-size: 1rem; line-height: 1.7; color: var(--g-dim); max-width: 64ch; margin: 0 0 1rem; }
+  .standfirst strong { color: var(--g-text); font-weight: 500; }
+
+  .plate { padding: 4rem 0; border-bottom: 1px solid var(--g-rule); }
+  .plate-head { display: grid; gap: .75rem; margin-bottom: 1.75rem; }
+  @media (min-width: 860px) { .plate-head { grid-template-columns: 5.5rem 1fr; gap: 0 2rem; align-items: baseline; } }
+  .idx { font-family: var(--g-disp); font-weight: 800; font-size: 2rem; line-height: 1; letter-spacing: -.04em; }
+  .plate-head h2 { font-family: var(--g-disp); font-weight: 800; font-size: clamp(1.5rem, 3.4vw, 2rem); letter-spacing: -.02em; margin: 0 0 .5rem; line-height: 1.1; }
+  .thesis { margin: 0; color: var(--g-dim); font-size: .95rem; line-height: 1.65; max-width: 62ch; }
+  .thesis strong { color: var(--g-text); font-weight: 500; }
+
+  .stage { position: relative; height: 440px; overflow: hidden; border: 1px solid var(--g-rule); }
+  @media (max-width: 700px) { .stage { height: 360px; } }
+
+  .plate-meta { display: grid; gap: 1.5rem; margin-top: 1.5rem; grid-template-columns: 1fr; }
+  @media (min-width: 860px) { .plate-meta { grid-template-columns: 1.1fr 1fr 1fr; gap: 2.5rem; } }
+  .meta-block h3 { font-size: .62rem; letter-spacing: .18em; text-transform: uppercase; color: var(--g-mute); margin: 0 0 .6rem; font-weight: 500; }
+  .meta-block p { margin: 0; font-size: .84rem; line-height: 1.65; color: var(--g-dim); }
+  .meta-block p + p { margin-top: .5rem; }
+  .meta-block b { color: var(--g-text); font-weight: 500; }
+  .chips { display: flex; flex-wrap: wrap; gap: .3rem; }
+  .chip { width: 2.6rem; height: 2.6rem; border: 1px solid var(--g-rule); display: flex; align-items: flex-end; justify-content: center; font-size: .48rem; padding-bottom: .18rem; }
+
+  /* ═══ E1 — TELEMETRY ═══════════════════════════════════════ */
+  .e1 .stage { background: #06080C; }
+  .t-frame { position: absolute; inset: 14px; border: 1px solid #161C24; pointer-events: none; }
+  .t-frame i { position: absolute; width: 9px; height: 9px; border: 1px solid #3A4759; }
+  .t-frame i:nth-child(1) { left: -1px; top: -1px; border-right: 0; border-bottom: 0; }
+  .t-frame i:nth-child(2) { right: -1px; top: -1px; border-left: 0; border-bottom: 0; }
+  .t-frame i:nth-child(3) { left: -1px; bottom: -1px; border-right: 0; border-top: 0; }
+  .t-frame i:nth-child(4) { right: -1px; bottom: -1px; border-left: 0; border-top: 0; }
+
+  .t-inner { position: absolute; inset: 14px; padding: 1.15rem 1.4rem; display: flex; flex-direction: column; }
+  .t-bar { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+  .t-id {
+    font-family: "IBM Plex Sans Condensed", sans-serif; font-weight: 700; font-size: .7rem;
+    letter-spacing: .2em; text-transform: uppercase; color: #C6D2E0;
+  }
+  .t-id em { font-style: normal; color: #46566B; margin: 0 .45rem; }
+  .t-ros { display: flex; gap: 1.5rem; }
+  .t-ro { text-align: right; }
+  .t-ro b {
+    display: block; font-family: "Azeret Mono", monospace; font-weight: 500;
+    font-size: 1.5rem; line-height: 1; color: #EAF1FA; font-variant-numeric: tabular-nums;
+  }
+  .t-ro span {
+    font-family: "IBM Plex Sans Condensed", sans-serif; font-weight: 600; font-size: .56rem;
+    letter-spacing: .2em; text-transform: uppercase; color: #5B6B80; display: block; margin-top: .3rem;
+  }
+  .t-ro.live b { color: #35E8FF; }
+
+  .t-body { display: flex; gap: 1.3rem; margin-top: 1.7rem; flex: 1; }
+  .t-rail { width: 3.1rem; flex: none; position: relative; border-right: 1px solid #141A22; }
+  .t-tick { position: absolute; right: 0; width: 6px; height: 1px; background: #22303F; }
+  .t-tick.maj { width: 13px; background: #3C4E63; }
+  .t-lab {
+    position: absolute; right: 17px; transform: translateY(-50%);
+    font-family: "Azeret Mono", monospace; font-size: .55rem; color: #46566B; font-variant-numeric: tabular-nums;
+  }
+  .t-text {
+    font-family: "IBM Plex Mono", monospace; font-size: clamp(.95rem, 2.4vw, 1.42rem);
+    line-height: 2.05; letter-spacing: .005em; max-width: 44ch; padding-top: .1rem;
+  }
+  .t-text .ok   { color: #E7EEF7; }
+  .t-text .bad  { color: #FF3DB8; }
+  .t-text .todo { color: #47566A; }
+  .t-caret { display: inline-block; width: 2px; height: 1.2em; background: #35E8FF; vertical-align: -.24em; box-shadow: 0 0 12px 1px rgba(53,232,255,.8); }
+  .t-trace { position: absolute; left: 14px; right: 14px; bottom: 14px; height: 122px; width: calc(100% - 28px); }
+  .t-legend {
+    position: absolute; right: 1.5rem; bottom: 1.35rem; display: flex; align-items: center; gap: .5rem;
+    font-family: "IBM Plex Sans Condensed", sans-serif; font-weight: 600; font-size: .54rem;
+    letter-spacing: .18em; text-transform: uppercase; color: #46566B;
+  }
+  .t-ramp { width: 68px; height: 3px; background: linear-gradient(90deg, #FF3DB8, #7A6BFF, #35E8FF); }
+
+  /* ═══ E2 — APERTURE ════════════════════════════════════════ */
+  .e2 .stage { background: radial-gradient(115% 88% at 50% 112%, #14303C 0%, #08151C 55%, #04090D 100%); }
+  .ap-ring { position: absolute; left: 50%; top: 52%; width: 430px; height: 430px; transform: translate(-50%,-50%); border-radius: 50%; border: 1px solid rgba(150,205,230,.13); }
+  .ap-ring::after { content: ""; position: absolute; inset: 44px; border-radius: 50%; border: 1px solid rgba(150,205,230,.08); }
+  .ap-cross { position: absolute; left: 50%; top: 52%; transform: translate(-50%,-50%); width: 500px; height: 1px; background: linear-gradient(90deg, transparent, rgba(150,205,230,.14), transparent); }
+  .ap-cross.v { width: 1px; height: 440px; background: linear-gradient(180deg, transparent, rgba(150,205,230,.12), transparent); }
+  .ap-glow { position: absolute; left: 50%; bottom: -32%; width: 105%; height: 84%; transform: translateX(-50%); background: radial-gradient(closest-side, rgba(159,226,255,.15), rgba(159,226,255,0) 70%); }
+
+  .ap-inner { position: absolute; inset: 0; padding: 1.3rem 1.6rem; display: flex; flex-direction: column; align-items: center; }
+  .ap-top { width: 100%; display: flex; justify-content: space-between; font-family: "IBM Plex Sans Condensed", sans-serif; font-weight: 700; font-size: .64rem; letter-spacing: .2em; text-transform: uppercase; color: #6F8DA0; }
+  .ap-chips { display: flex; gap: .4rem; margin-top: 2.1rem; }
+  .ap-chip { font-family: "IBM Plex Sans Condensed", sans-serif; font-weight: 700; font-size: .58rem; letter-spacing: .16em; text-transform: uppercase; padding: .32rem .68rem; border: 1px solid rgba(159,226,255,.2); color: #9FC7DA; }
+  .ap-chip.on { border-color: #9FE2FF; color: #04090D; background: #9FE2FF; }
+  .ap-text {
+    font-family: "IBM Plex Mono", monospace; font-size: clamp(.95rem, 2.5vw, 1.45rem);
+    line-height: 2; text-align: center; max-width: 30ch; margin-top: 2rem;
+  }
+  .ap-text .ok   { color: #EDF7FC; }
+  .ap-text .bad  { color: #FF5FA2; }
+  .ap-text .todo { color: #4E6976; }
+  .ap-text .far  { color: #33505C; filter: blur(1.5px); }
+  .ap-text .far2 { color: #243B45; filter: blur(3.2px); }
+  .ap-caret { display: inline-block; width: 2px; height: 1.2em; background: #9FE2FF; vertical-align: -.24em; box-shadow: 0 0 16px 2px rgba(159,226,255,.85); }
+  .ap-num {
+    position: absolute; left: 1.6rem; bottom: 1.2rem;
+    font-family: "IBM Plex Sans Condensed", sans-serif; font-weight: 700;
+    font-size: clamp(2.8rem, 8vw, 4.4rem); line-height: .85; color: #EDF7FC;
+    font-variant-numeric: tabular-nums; letter-spacing: -.01em;
+  }
+  .ap-num small { display: block; font-size: .56rem; letter-spacing: .22em; color: #6F8DA0; margin-top: .55rem; }
+  .ap-trace { position: absolute; left: 0; right: 0; bottom: 0; height: 128px; width: 100%; }
+
+  /* ═══ E3 — MACHINE VISION ══════════════════════════════════ */
+  .e3 .stage { background: #07090D; }
+  .mv-inner { position: absolute; inset: 0; padding: 1.2rem 1.5rem; }
+  .mv-top { display: flex; justify-content: space-between; font-family: "IBM Plex Sans Condensed", sans-serif; font-weight: 700; font-size: .62rem; letter-spacing: .2em; text-transform: uppercase; color: #5E6B7C; }
+  .mv-top b { color: #E4EAF2; font-weight: 700; }
+
+  .mv-text { font-family: "IBM Plex Mono", monospace; font-size: clamp(.9rem, 2.3vw, 1.3rem); line-height: 2.6; margin-top: 2.3rem; max-width: 40ch; }
+  .mv-w { position: relative; padding: .18em .28em; }
+  .mv-w.done { color: #E4EAF2; }
+  .mv-w.next { color: #E4EAF2; }
+  .mv-w.pred { color: #4B5766; outline: 1px dashed #1E2733; outline-offset: 0; }
+  .mv-w.risk { color: #FF4D9E; outline: 1px dashed rgba(255,77,158,.42); }
+  .mv-w.next::before, .mv-w.next::after {
+    content: ""; position: absolute; width: 7px; height: 7px; border: 1px solid #E4EAF2;
+  }
+  .mv-w.next::before { left: -2px; top: -3px; border-right: 0; border-bottom: 0; }
+  .mv-w.next::after { right: -2px; bottom: -3px; border-left: 0; border-top: 0; }
+  .mv-tag {
+    position: absolute; left: -2px; top: -1.35em; white-space: nowrap;
+    font-family: "Azeret Mono", monospace; font-size: .5rem; color: #FF4D9E; letter-spacing: .04em;
+  }
+  .mv-caret { display: inline-block; width: 2px; height: 1.15em; background: #E4EAF2; vertical-align: -.22em; }
+
+  .mv-rail { position: absolute; right: 1.5rem; top: 3.6rem; width: 168px; }
+  .mv-rail h4 { font-family: "IBM Plex Sans Condensed", sans-serif; font-weight: 700; font-size: .56rem; letter-spacing: .2em; text-transform: uppercase; color: #5E6B7C; margin: 0 0 .7rem; }
+  .mv-row { display: grid; grid-template-columns: 2.2rem 1fr 2.2rem; align-items: center; gap: .45rem; margin-bottom: .42rem; font-family: "Azeret Mono", monospace; font-size: .58rem; color: #98A5B6; font-variant-numeric: tabular-nums; }
+  .mv-bar { height: 3px; background: #151C25; position: relative; }
+  .mv-bar i { position: absolute; left: 0; top: 0; bottom: 0; background: #FF4D9E; }
+  .mv-row span:last-child { text-align: right; color: #5E6B7C; }
+
+  .mv-trace { position: absolute; left: 0; right: 0; bottom: 0; height: 124px; width: 100%; }
+  .mv-foot { position: absolute; left: 1.5rem; bottom: 1.15rem; font-family: "IBM Plex Sans Condensed", sans-serif; font-weight: 700; font-size: .54rem; letter-spacing: .2em; text-transform: uppercase; color: #46525F; }
+
+  .close { padding: 3.5rem 0 0; }
+  .close h2 { font-family: var(--g-disp); font-weight: 800; font-size: 1.6rem; letter-spacing: -.02em; margin: 0 0 1rem; }
+  .close p { max-width: 64ch; color: var(--g-dim); font-size: .95rem; }
+  .close p strong { color: var(--g-text); font-weight: 500; }
+  .rec { border-left: 2px solid var(--g-text); padding: .2rem 0 .2rem 1.25rem; margin: 1.75rem 0; max-width: 64ch; }
+  .rec p { margin: 0; color: var(--g-text); }
+  .rec p + p { margin-top: .6rem; color: var(--g-dim); }
+
+  @media (prefers-reduced-motion: reduce) { * { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="kicker">bettertyping 2 · art direction · round two · futurist</p>
+    <h1>A precision instrument that lives in the future.</h1>
+    <p class="standfirst">
+      You took the <strong>weight and the measurement logic of A</strong> and the <strong>depth and atmosphere of C</strong>. All three below are that hybrid — condensed technical labels, tabular readouts and calibration marks, set in volumetric dark rather than on paper.
+    </p>
+    <p class="standfirst">
+      They differ in <strong>where the intelligence shows</strong>: E1 shows it as telemetry, E2 hides it behind an optical instrument, E3 puts you inside the model's own view.
+    </p>
+  </header>
+
+  <!-- ══ E1 ══ -->
+  <article class="plate e1">
+    <div class="plate-head">
+      <span class="idx">E1</span>
+      <div>
+        <h2>Telemetry</h2>
+        <p class="thesis">
+          Graphite ground, hairline frame, corner registration marks, dense micro-typography. The discipline is absolute: <strong>the interface is monochrome and colour belongs exclusively to data.</strong> The spectral ramp — magenta through indigo to ice — is your speed, and it appears nowhere except the trace, the caret and the heatmap. Restraint is what makes it read as an instrument rather than a video game.
+        </p>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="t-frame"><i></i><i></i><i></i><i></i></div>
+      <div class="t-inner">
+        <div class="t-bar">
+          <div class="t-id">bettertyping<em>//</em>run 0416<em>·</em>words 25<em>·</em>punct on</div>
+          <div class="t-ros">
+            <div class="t-ro live"><b>91.4</b><span>wpm</span></div>
+            <div class="t-ro"><b>97.2</b><span>acc</span></div>
+            <div class="t-ro"><b>0.148</b><span>mean s</span></div>
+            <div class="t-ro"><b>94</b><span>consist</span></div>
+          </div>
+        </div>
+        <div class="t-body">
+          <div class="t-rail" id="t-rail"></div>
+          <div class="t-text">
+            <span class="ok">the current of a</span> <span class="bad">sentance</span><span class="t-caret"></span> <span class="todo">carries more than its words the pauses</span>
+          </div>
+        </div>
+      </div>
+      <svg class="t-trace" viewBox="0 0 1000 122" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="ramp1" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#FF3DB8"></stop>
+            <stop offset="52%" stop-color="#7A6BFF"></stop>
+            <stop offset="100%" stop-color="#35E8FF"></stop>
+          </linearGradient>
+          <linearGradient id="ramp1f" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(53,232,255,.16)"></stop>
+            <stop offset="100%" stop-color="rgba(53,232,255,0)"></stop>
+          </linearGradient>
+        </defs>
+        <path class="fill" d="" fill="url(#ramp1f)"></path>
+        <path class="line" d="" fill="none" stroke="url(#ramp1)" stroke-width="1.6" vector-effect="non-scaling-stroke"></path>
+        <g class="marks" stroke="#22303F" stroke-width="1"></g>
+      </svg>
+      <div class="t-legend"><span>slow</span><span class="t-ramp"></span><span>fast</span></div>
+    </div>
+    <div class="plate-meta">
+      <div class="meta-block">
+        <h3>Palette</h3>
+        <div class="chips">
+          <div class="chip" style="background:#06080C; color:#E7EEF7;">ground</div>
+          <div class="chip" style="background:#161C24; color:#E7EEF7;">rule</div>
+          <div class="chip" style="background:#E7EEF7; color:#06080C;">text</div>
+          <div class="chip" style="background:#35E8FF; color:#06080C;">fast</div>
+          <div class="chip" style="background:#7A6BFF; color:#06080C;">mid</div>
+          <div class="chip" style="background:#FF3DB8; color:#06080C;">slow</div>
+        </div>
+      </div>
+      <div class="meta-block">
+        <h3>Type</h3>
+        <p><b>IBM Plex Sans Condensed 700</b> — every label, identifier and unit. This is the weight you liked in A.</p>
+        <p><b>Azeret Mono</b> — readouts and numerals, mechanical and distinctly not-of-today.</p>
+        <p><b>IBM Plex Mono</b> — test text, chosen purely for legibility at speed.</p>
+      </div>
+      <div class="meta-block">
+        <h3>The Line here</h3>
+        <p>A spectral trace whose hue <em>is</em> your instantaneous speed, with keystroke event marks ticking beneath it. On finish it detaches and the ramp becomes the legend of your results chart.</p>
+      </div>
+    </div>
+  </article>
+
+  <!-- ══ E2 ══ -->
+  <article class="plate e2">
+    <div class="plate-head">
+      <span class="idx">E2</span>
+      <div>
+        <h2>Aperture</h2>
+        <p class="thesis">
+          C's chamber with an optical instrument built into it — a focusing ring, hairline crosshairs, one cold light source below the horizon. Words ahead sit out of focus and resolve as you reach them, so <strong>the depth of field is doing real work</strong>, not decoration. The most serene of the three, and the easiest to look at for an hour.
+        </p>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="ap-glow"></div>
+      <div class="ap-ring"></div>
+      <div class="ap-cross"></div>
+      <div class="ap-cross v"></div>
+      <div class="ap-inner">
+        <div class="ap-top"><span>bettertyping · aperture</span><span>run 0416 / 25w</span></div>
+        <div class="ap-chips">
+          <span class="ap-chip on">words 25</span>
+          <span class="ap-chip">punctuation</span>
+          <span class="ap-chip">numbers</span>
+        </div>
+        <div class="ap-text">
+          <span class="ok">the current of a</span> <span class="bad">sentance</span><span class="ap-caret"></span> <span class="todo">carries</span> <span class="far">more than its words</span> <span class="far2">the pauses are</span>
+        </div>
+        <div class="ap-num">91.4<small>words / minute</small></div>
+      </div>
+      <svg class="ap-trace" viewBox="0 0 1000 128" preserveAspectRatio="none" aria-hidden="true">
+        <path class="fill" d="" fill="rgba(159,226,255,.09)"></path>
+        <path class="line" d="" fill="none" stroke="#9FE2FF" stroke-width="1.4" vector-effect="non-scaling-stroke"></path>
+      </svg>
+    </div>
+    <div class="plate-meta">
+      <div class="meta-block">
+        <h3>Palette</h3>
+        <div class="chips">
+          <div class="chip" style="background:#04090D; color:#EDF7FC;">void</div>
+          <div class="chip" style="background:#14303C; color:#EDF7FC;">atmos</div>
+          <div class="chip" style="background:#9FE2FF; color:#04090D;">light</div>
+          <div class="chip" style="background:#EDF7FC; color:#04090D;">text</div>
+          <div class="chip" style="background:#FF5FA2; color:#04090D;">error</div>
+        </div>
+      </div>
+      <div class="meta-block">
+        <h3>Type</h3>
+        <p><b>IBM Plex Sans Condensed 700</b> carries both the micro-labels and the huge result numerals — heavy condensed at 4rem is the whole personality.</p>
+        <p><b>IBM Plex Mono</b> — test text on the focal plane.</p>
+      </div>
+      <div class="meta-block">
+        <h3>The Line here</h3>
+        <p>A filament of cold light below the horizon — the only emitting object in the scene. On finish the camera pulls back and it is revealed to have been your curve all along.</p>
+      </div>
+    </div>
+  </article>
+
+  <!-- ══ E3 ══ -->
+  <article class="plate e3">
+    <div class="plate-head">
+      <span class="idx">E3</span>
+      <div>
+        <h2>Machine Vision</h2>
+        <p class="thesis">
+          The interface is <strong>what the analysis engine sees</strong>. Words carry detection boxes, the active word sits in a reticle, and the rail forecasts which bigrams are about to cost you — because after a few tests it genuinely can. The trace is drawn inside a confidence band. Nothing here is faked for looks: every number is one we already compute.
+        </p>
+        <p class="thesis" style="margin-top:.6rem">
+          <strong>The one caveat:</strong> annotations live in the ready state, the results and the dashboard. The moment you start typing they fade to just the reticle, or they would wreck the very focus we are protecting.
+        </p>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="mv-inner">
+        <div class="mv-top"><span><b>bettertyping</b> · keystroke forecast</span><span>obs 1,204 · conf 0.93</span></div>
+        <div class="mv-text">
+          <span class="mv-w done">the</span> <span class="mv-w done">current</span> <span class="mv-w done">of</span> <span class="mv-w next">a<span class="mv-caret"></span><span class="mv-tag">pred 148ms · conf .93</span></span> <span class="mv-w risk">sentence<span class="mv-tag">risk .41 · nt</span></span> <span class="mv-w pred">carries</span> <span class="mv-w pred">more</span> <span class="mv-w pred">than</span> <span class="mv-w pred">its</span> <span class="mv-w pred">words</span>
+        </div>
+        <div class="mv-rail">
+          <h4>bigram risk</h4>
+          <div class="mv-row"><span>nt</span><span class="mv-bar"><i style="width:82%"></i></span><span>.41</span></div>
+          <div class="mv-row"><span>yp</span><span class="mv-bar"><i style="width:64%"></i></span><span>.32</span></div>
+          <div class="mv-row"><span>br</span><span class="mv-bar"><i style="width:47%"></i></span><span>.24</span></div>
+          <div class="mv-row"><span>ol</span><span class="mv-bar"><i style="width:29%"></i></span><span>.15</span></div>
+          <div class="mv-row"><span>th</span><span class="mv-bar"><i style="width:9%"></i></span><span>.04</span></div>
+        </div>
+        <div class="mv-foot">confidence band ± 1σ · model updates every test</div>
+      </div>
+      <svg class="mv-trace" viewBox="0 0 1000 124" preserveAspectRatio="none" aria-hidden="true">
+        <path class="band" d="" fill="rgba(228,234,242,.07)"></path>
+        <path class="line" d="" fill="none" stroke="#E4EAF2" stroke-width="1.4" vector-effect="non-scaling-stroke"></path>
+      </svg>
+    </div>
+    <div class="plate-meta">
+      <div class="meta-block">
+        <h3>Palette</h3>
+        <div class="chips">
+          <div class="chip" style="background:#07090D; color:#E4EAF2;">ground</div>
+          <div class="chip" style="background:#151C25; color:#E4EAF2;">grid</div>
+          <div class="chip" style="background:#E4EAF2; color:#07090D;">signal</div>
+          <div class="chip" style="background:#FF4D9E; color:#07090D;">risk</div>
+        </div>
+      </div>
+      <div class="meta-block">
+        <h3>Type</h3>
+        <p><b>IBM Plex Sans Condensed 700</b> — system labels.</p>
+        <p><b>Azeret Mono</b> — every prediction, probability and tag.</p>
+        <p><b>IBM Plex Mono</b> — test text.</p>
+      </div>
+      <div class="meta-block">
+        <h3>The Line here</h3>
+        <p>Drawn inside a shaded ±1σ confidence band. Where you beat the forecast the trace leaves the band, and that overshoot is the thing worth celebrating on the results screen.</p>
+      </div>
+    </div>
+  </article>
+
+  <section class="close">
+    <h2>My recommendation</h2>
+    <div class="rec">
+      <p><strong>E1 — Telemetry</strong>, taking E3's confidence band and forecast rail into the results and analytics views.</p>
+      <p>E1 holds the whole product together: it is calm enough to type in every morning, precise enough to look like it knows something, and its one rule — monochrome interface, chromatic data — is a discipline that keeps every future screen on-identity without me having to re-decide. E3's ideas are too good to lose, but they belong where you are reading rather than typing. E2 is the most beautiful of the three and the least differentiated; its atmosphere is a treatment other sites could copy in an afternoon.</p>
+    </div>
+    <p><strong>Say a number.</strong> Or mix them — "E1 but with E2's fog behind it" is exactly the kind of note I want, and costs nothing today.</p>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  var series = [], seed = 23;
+  function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+  for (var i = 0; i < 110; i++) {
+    var t = i / 109;
+    var base = 46 + 54 * (1 - Math.exp(-t * 4.4));
+    var dip = Math.exp(-Math.pow((t - 0.47) / 0.05, 2)) * 28;
+    var wob = Math.sin(t * 18.5) * 3.6 + (rnd() - 0.5) * 4.6;
+    series.push(Math.max(16, base - dip + wob));
+  }
+  var lo = 10, hi = 122;
+
+  function path(w, h, top, bottom, mode, spread) {
+    var n = series.length, d = '', i, x, y;
+    for (i = 0; i < n; i++) {
+      x = (i / (n - 1)) * w;
+      y = bottom - ((series[i] - lo) / (hi - lo)) * (bottom - top);
+      d += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ' ' + (y - (spread || 0)).toFixed(1);
+    }
+    if (mode === 'fill') { d += 'L' + w + ' ' + h + 'L0 ' + h + 'Z'; }
+    if (mode === 'band') {
+      for (i = n - 1; i >= 0; i--) {
+        x = (i / (n - 1)) * w;
+        y = bottom - ((series[i] - lo) / (hi - lo)) * (bottom - top);
+        d += 'L' + x.toFixed(1) + ' ' + (y + spread).toFixed(1);
+      }
+      d += 'Z';
+    }
+    return d;
+  }
+
+  function apply(sel, w, h, top, bottom) {
+    var svg = document.querySelector(sel); if (!svg) return;
+    var line = svg.querySelector('.line'), fill = svg.querySelector('.fill'), band = svg.querySelector('.band');
+    if (line) line.setAttribute('d', path(w, h, top, bottom, 'line', 0));
+    if (fill) fill.setAttribute('d', path(w, h, top, bottom, 'fill', 0));
+    if (band) band.setAttribute('d', path(w, h, top, bottom, 'band', 9));
+  }
+
+  apply('.t-trace', 1000, 122, 18, 100);
+  apply('.ap-trace', 1000, 128, 24, 116);
+  apply('.mv-trace', 1000, 124, 20, 104);
+
+  // E1 keystroke event marks along the baseline
+  var marks = document.querySelector('.t-trace .marks');
+  if (marks) {
+    var out = '';
+    for (var m = 0; m < 96; m++) {
+      var mx = (m / 95) * 1000 + (Math.sin(m * 3.1) * 2.4);
+      var mh = 4 + (m % 5 === 0 ? 4 : 0);
+      out += '<line x1="' + mx.toFixed(1) + '" y1="' + (114 - mh) + '" x2="' + mx.toFixed(1) + '" y2="114"></line>';
+    }
+    marks.innerHTML = out;
+  }
+
+  // E1 rail ticks
+  var rail = document.getElementById('t-rail');
+  if (rail) {
+    var html = '';
+    for (var k = 0; k <= 16; k++) {
+      var pct = (k / 16) * 100;
+      var maj = k % 4 === 0;
+      html += '<div class="t-tick' + (maj ? ' maj' : '') + '" style="top:' + pct + '%"></div>';
+      if (maj) html += '<div class="t-lab" style="top:' + pct + '%">' + (140 - k * 8.75).toFixed(0) + '</div>';
+    }
+    rail.innerHTML = html;
+  }
+
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduced && 'IntersectionObserver' in window) {
+    document.querySelectorAll('.stage svg .line').forEach(function (p) {
+      var len = p.getTotalLength();
+      p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
+    });
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        var p = e.target.querySelector('svg .line');
+        if (p) { p.style.transition = 'stroke-dashoffset 2.6s cubic-bezier(.22,.61,.36,1)'; p.style.strokeDashoffset = '0'; }
+        io.unobserve(e.target);
+      });
+    }, { threshold: 0.3 });
+    document.querySelectorAll('.stage').forEach(function (s) { io.observe(s); });
+  }
+})();
+</script>
