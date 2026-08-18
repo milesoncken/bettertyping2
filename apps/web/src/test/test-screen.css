@@ -30,6 +30,12 @@
   margin-top: auto;
 }
 
+.bar-right {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.75rem;
+}
+
 .ident {
   font-family: var(--f-label);
   font-weight: 700;

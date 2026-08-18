@@ -8,6 +8,8 @@ import { Readouts } from "./Readouts.js";
 import { Frame, Rail } from "./Chrome.js";
 import { ModeBar } from "./ModeBar.js";
 import { Results } from "./Results.js";
+import { Account } from "./Account.js";
+import { useSubmission } from "./useSubmission.js";
 import { Perf } from "./Perf.js";
 import { TheLine } from "./TheLine.js";
 import type { TracePoint } from "./TheLine.js";
@@ -32,10 +34,11 @@ export function TestScreen(): React.JSX.Element {
   const profileRef = useRef<Profile>(profile);
   profileRef.current = profile;
 
-  const { state, stateRef, originRef, restart, setConfig } = useTypingTest(
+  const { state, stateRef, originRef, testIdRef, restart, setConfig } = useTypingTest(
     INITIAL,
     profileRef,
   );
+  const submission = useSubmission(state, testIdRef);
 
   const pointsRef = useRef<TracePoint[]>([]);
   const hostRef = useRef<HTMLDivElement>(null);
@@ -130,18 +133,26 @@ export function TestScreen(): React.JSX.Element {
             <em>·</em>
             {state.config.punctuation ? "punct on" : "punct off"}
           </div>
-          <Readouts
+          <div className="bar-right">
+            <Account />
+            <Readouts
             stateRef={stateRef}
             originRef={originRef}
             running={state.phase === "running"}
             {...(state.config.mode === "time" && state.config.duration !== undefined
               ? { duration: state.config.duration }
               : {})}
-          />
+            />
+          </div>
         </header>
 
         {finished ? (
-          <Results state={state} chartAnchorRef={chartAnchorRef} onRestart={restart} />
+          <Results
+            state={state}
+            chartAnchorRef={chartAnchorRef}
+            submission={submission}
+            onRestart={restart}
+          />
         ) : (
           <section className="field">
             <div className="viewport" data-idle={state.phase === "idle" || undefined}>

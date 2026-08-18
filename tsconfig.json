@@ -1,7 +1,17 @@
 {
   "files": [],
   "references": [
-    { "path": "./packages/engine" },
-    { "path": "./packages/metrics" }
+    {
+      "path": "./packages/engine"
+    },
+    {
+      "path": "./packages/metrics"
+    },
+    {
+      "path": "./packages/schema"
+    },
+    {
+      "path": "./packages/verify"
+    }
   ]
 }

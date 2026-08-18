@@ -12,13 +12,14 @@
     "build:packages": "tsc --build --force",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --build --force && tsc -p apps/web --noEmit",
+    "typecheck": "tsc --build --force && tsc -p apps/web --noEmit && tsc -p apps/api --noEmit",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@types/node": "^22.10.2",
+    "drizzle-kit": "^0.30.6",
     "eslint": "^9.17.0",
     "prettier": "^3.4.2",
     "typescript": "^5.7.2",

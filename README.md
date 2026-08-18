@@ -40,3 +40,10 @@ pnpm lint
 |---|---|
 | `packages/engine` | Pure TypeScript typing engine. No DOM, no React, no timers. |
 | `packages/metrics` | Canonical WPM / accuracy / consistency. Imported by client *and* server. |
+| `packages/verify` | Submission verification: replay, then decide whether hands could have done it. |
+| `packages/schema` | Drizzle tables, committed migrations, and the Zod wire contracts. |
+| `apps/web` | React 19 + Vite. The test screen and the Line. |
+| `apps/api` | Fastify. Google sign-in, test issuance, verified submission. |
+
+Backend setup, including creating the Google OAuth application:
+[`docs/BACKEND.md`](docs/BACKEND.md).

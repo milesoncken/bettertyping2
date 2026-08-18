@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import type { EngineState } from "@bettertyping/engine";
 import { computeResults } from "@bettertyping/metrics";
 import { Backdrop } from "../spectacle/Backdrop.js";
+import type { SubmissionState } from "./useSubmission.js";
 import "./results.css";
 
 /**
@@ -16,10 +17,13 @@ import "./results.css";
 export function Results({
   state,
   chartAnchorRef,
+  submission,
   onRestart,
 }: {
   state: EngineState;
   chartAnchorRef: React.RefObject<HTMLDivElement | null>;
+  /** The server's word on this run, once it has given one. */
+  submission: SubmissionState;
   onRestart: () => void;
 }): React.JSX.Element {
   const results = useMemo(() => computeResults(state), [state]);
@@ -29,7 +33,7 @@ export function Results({
       <Backdrop />
 
       <div className="results-head reveal" style={{ animationDelay: "620ms" }}>
-        <span className="label">run complete</span>
+        <Standing submission={submission} />
         <span className="label">
           {state.config.mode === "time"
             ? `${state.config.duration}s`
@@ -68,6 +72,50 @@ export function Results({
       </div>
     </div>
   );
+}
+
+/**
+ * What the server made of the run.
+ *
+ * Stated plainly, including when it is bad news: a rejected run says so and says
+ * why. A leaderboard nobody can read the rules of is not trustworthy, it is just
+ * opaque.
+ */
+function Standing({ submission }: { submission: SubmissionState }): React.JSX.Element {
+  switch (submission.status) {
+    case "idle":
+    case "unranked":
+      return <span className="label">run complete</span>;
+
+    case "submitting":
+      return <span className="label">verifying…</span>;
+
+    case "verified": {
+      const best = submission.personalBest;
+      return (
+        <span className="label standing" data-tone="good">
+          {best
+            ? `personal best${best.previous === null ? "" : ` · was ${best.previous.toFixed(1)}`}`
+            : "verified"}
+        </span>
+      );
+    }
+
+    case "flagged":
+      return (
+        <span className="label standing" data-tone="hold">
+          held for review
+        </span>
+      );
+
+    case "rejected":
+      return (
+        <span className="label standing" data-tone="bad">
+          not counted
+          {submission.reasons[0] ? ` · ${submission.reasons[0].replace(/-/g, " ")}` : ""}
+        </span>
+      );
+  }
 }
 
 function Figure({

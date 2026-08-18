@@ -1,0 +1,12 @@
+.account {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 4rem;
+  justify-content: flex-end;
+  text-decoration: none;
+}
+
+.account-name {
+  color: var(--text);
+}

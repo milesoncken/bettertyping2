@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { applyKey, createState, expectedChar, finish } from "@bettertyping/engine";
 import type { EngineState, TestConfig } from "@bettertyping/engine";
 import { recordLatency } from "../lib/latency.js";
+import { issueTest, toEngineConfig } from "../lib/api.js";
 import { playKey } from "../lib/audio.js";
 import type { Profile } from "../lib/audio.js";
 
@@ -18,6 +19,8 @@ const newSeed = (): string => Math.random().toString(36).slice(2, 12);
 
 export interface TypingTest {
   state: EngineState;
+  /** The server's id for this run, or null when playing unranked. */
+  testIdRef: React.RefObject<string | null>;
   stateRef: React.RefObject<EngineState>;
   /** Monotonic ms of the first keystroke, or null before the test starts. */
   originRef: React.RefObject<number | null>;
@@ -32,30 +35,68 @@ export function useTypingTest(
 ): TypingTest {
   const [config, setConfigState] = useState<TestConfig>(initial);
   const [state, setState] = useState<EngineState>(() => createState(initial));
+  const initialRef = useRef(initial);
 
   const stateRef = useRef<EngineState>(state);
   const originRef = useRef<number | null>(null);
   const pendingKeyAt = useRef<number | null>(null);
+  const testIdRef = useRef<string | null>(null);
+  /** Guards against a slow issuance landing after the player already restarted. */
+  const dealRef = useRef(0);
 
   stateRef.current = state;
+
+  /**
+   * Deal a fresh test.
+   *
+   * The seed comes from the server when there is one, because a ranked run must
+   * be played against text the server chose. With no server — or a failed
+   * request — a local seed is used and the run is simply unranked.
+   */
+  const deal = useCallback((next: TestConfig) => {
+    const deal = ++dealRef.current;
+    testIdRef.current = null;
+    originRef.current = null;
+    setState(createState(next));
+
+    void issueTest({
+      mode: next.mode,
+      punctuation: next.punctuation,
+      numbers: next.numbers,
+      ...(next.duration !== undefined ? { duration: next.duration } : {}),
+      ...(next.count !== undefined ? { count: next.count } : {}),
+    }).then((issued) => {
+      if (deal !== dealRef.current) return;
+      testIdRef.current = issued.testId;
+      // Re-deal against the server's seed. Harmless before the first keystroke,
+      // and skipped outright once the player has started.
+      setState((current) =>
+        current.phase === "idle" ? createState(toEngineConfig(next, issued.seed)) : current,
+      );
+    });
+  }, []);
 
   const restart = useCallback(() => {
     setConfigState((prev) => {
       const next: TestConfig = { ...prev, seed: newSeed() };
-      originRef.current = null;
-      setState(createState(next));
+      deal(next);
       return next;
     });
-  }, []);
+  }, [deal]);
 
   const setConfig = useCallback((patch: Partial<TestConfig>) => {
     setConfigState((prev) => {
       const next: TestConfig = { ...prev, ...patch, seed: newSeed() };
-      originRef.current = null;
-      setState(createState(next));
+      deal(next);
       return next;
     });
-  }, []);
+  }, [deal]);
+
+  // Ask for the first test's seed on mount. `deal` is stable and `initialRef`
+  // never changes, so this runs exactly once.
+  useEffect(() => {
+    deal(initialRef.current);
+  }, [deal]);
 
   // ── Keystrokes ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -133,5 +174,5 @@ export function useTypingTest(
     return () => cancelAnimationFrame(frame);
   }, [state.phase, config.mode, config.duration]);
 
-  return { state, stateRef, originRef, restart, setConfig };
+  return { state, stateRef, originRef, testIdRef, restart, setConfig };
 }

@@ -13,7 +13,7 @@
 | Backend | Node + TypeScript + Fastify |
 | Database | Postgres + Drizzle ORM. **Clean slate** — no migration. |
 | Results integrity | Server replays every submission and recomputes results. |
-| Auth | Google + Discord OAuth. Guest play, results claimable on sign-in. |
+| Auth | Google OAuth (PKCE). Discord deferred. Guest play, unranked. |
 | Modes (v1) | time, words, + punctuation / numbers modifiers |
 | Coaching | Deterministic analytics → generated drills. No LLM. |
 | Mobile | Fully responsive site; the **test itself is desktop-only** by design. |
@@ -313,6 +313,12 @@ reports how many tests remain before predictions unlock — not a blank rail.
   chart, E3's ±1σ confidence band, synthesised switch audio, and the lazy WebGL
   results backdrop. Test route **71 KB gzip**; the shader is a separate 1.4 KB
   chunk the test route never loads.
+
+- **4** — `apps/api` (Fastify), `packages/schema` (Drizzle + Zod),
+  `packages/verify`. Google OAuth with PKCE, sessions, test issuance and
+  server-replayed submission. 60 tests, including a full integration suite
+  against real Postgres via PGlite with the committed migration applied. Setup in
+  [`BACKEND.md`](BACKEND.md).
 
 **Confidence band, honestly scoped.** In Stage 3 the band is ±1σ of the player's
 own rhythm *within the run* — a centred rolling mean and standard deviation of

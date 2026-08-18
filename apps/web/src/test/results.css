@@ -110,3 +110,17 @@
   margin: 0;
   color: var(--text-dim);
 }
+
+.standing[data-tone="good"] {
+  color: var(--data-fast);
+}
+
+/* Semantic states are the one place a colour outside the ramp is warranted:
+   "not counted" must not read as a speed. */
+.standing[data-tone="hold"] {
+  color: var(--text);
+}
+
+.standing[data-tone="bad"] {
+  color: var(--data-slow);
+}
