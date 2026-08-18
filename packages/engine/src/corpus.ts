@@ -1,0 +1,57 @@
+// Common English corpus for test generation.
+//
+// Deduplicated and normalised from the v1 word lists, which carried ~30% duplicate
+// entries across three "difficulty" arrays that no UI could ever reach. Kept as a
+// single corpus: difficulty in v2 comes from modifiers, not from separate lists.
+//
+// TODO(stage-8): expand to ~1000 entries weighted by real English frequency.
+
+export const COMMON_WORDS: readonly string[] = [
+  "a", "about", "above", "abruptly", "absurd", "abyss", "affix", "after",
+  "again", "against", "all", "also", "although", "am", "among", "an",
+  "and", "another", "any", "are", "around", "as", "askew", "at",
+  "avenue", "awkward", "axiom", "azure", "back", "bagpipes", "bandwagon", "banjo",
+  "be", "because", "beekeeper", "been", "before", "behind", "below", "between",
+  "beyond", "bikini", "blitz", "blizzard", "boggle", "bookworm", "both", "boxcar",
+  "boxful", "buckaroo", "buffalo", "buffoon", "but", "buxom", "buzzard", "buzzing",
+  "buzzwords", "by", "caliph", "can", "change", "children", "cobweb", "cockiness",
+  "come", "could", "country", "croquet", "crypt", "curacao", "cycle", "daiquiri",
+  "day", "did", "different", "dirndl", "disavow", "dizzying", "do", "does",
+  "duplex", "during", "dwarves", "each", "embezzle", "equip", "espionage", "euouae",
+  "even", "example", "exodus", "faking", "few", "first", "fishhook", "five",
+  "fixable", "fjord", "flapjack", "flopping", "fluffiness", "flyby", "for", "four",
+  "foxglove", "frazzled", "friends", "frizzled", "from", "fuchsia", "funny", "gabby",
+  "galaxy", "galvanize", "gazebo", "get", "giaour", "give", "gizmo", "glowworm",
+  "glyph", "gnarly", "go", "good", "gossip", "grogginess", "had", "haiku",
+  "haphazard", "has", "have", "he", "her", "here", "him", "his",
+  "how", "however", "hyphen", "i", "iatrogenic", "icebox", "if", "important",
+  "in", "information", "injury", "into", "is", "it", "its", "ivory",
+  "ivy", "jackpot", "jaundice", "jawbreaker", "jaywalk", "jazziest", "jazzy", "jelly",
+  "jigsaw", "jinx", "jiujitsu", "jockey", "jogging", "joking", "jovial", "joyful",
+  "juicy", "jukebox", "jumbo", "just", "kayak", "kazoo", "keyhole", "khaki",
+  "kilobyte", "kiosk", "knapsack", "know", "language", "larynx", "lengths", "like",
+  "little", "look", "lucky", "luxury", "lymph", "make", "many", "marquis",
+  "me", "memento", "more", "most", "much", "my", "mystify", "naphtha",
+  "near", "new", "nightclub", "no", "none", "not", "now", "nowadays",
+  "numbskull", "of", "off", "on", "one", "only", "or", "ostracize",
+  "other", "our", "out", "over", "oxygen", "pajamas", "peekaboo", "people",
+  "phlegm", "pixel", "pizazz", "pizzazz", "pneumonia", "polka", "problem", "pshaw",
+  "psyche", "puppy", "quartz", "question", "queue", "quintuple", "quips", "quixotic",
+  "quiz", "quizzed", "quizzes", "rhubarb", "rhythm", "rickshaw", "same", "say",
+  "schnapps", "scratch", "second", "see", "several", "she", "shiv", "should",
+  "since", "snazzy", "so", "some", "something", "sometimes", "sphinx", "spritz",
+  "squawk", "staff", "strength", "strengths", "stretch", "stronghold", "student", "stymied",
+  "subway", "swivel", "syndrome", "take", "teacher", "than", "that", "the",
+  "their", "them", "then", "there", "these", "they", "think", "third",
+  "this", "those", "thought", "three", "thriftless", "through", "thumbscrew", "time",
+  "to", "together", "too", "topaz", "transcript", "transgress", "transplant", "triphthong",
+  "twelfth", "twelfths", "two", "under", "understand", "unknown", "unless", "until",
+  "unworthy", "unzip", "up", "uptown", "us", "use", "vaporize", "very",
+  "vixen", "vodka", "voodoo", "vortex", "voyeurism", "walkway", "waltz", "want",
+  "was", "wave", "wavy", "waxy", "way", "we", "well", "wellspring",
+  "were", "what", "wheezy", "when", "where", "whether", "which", "while",
+  "whiskey", "whizzing", "who", "whomever", "why", "will", "wimpy", "witchcraft",
+  "with", "without", "wizard", "woozy", "work", "would", "wristwatch", "wyvern",
+  "xylophone", "yachtsman", "year", "yet", "yippee", "yoked", "you", "your",
+  "youthful", "yummy",
+] as const;

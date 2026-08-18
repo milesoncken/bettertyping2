@@ -1,45 +1,24 @@
 {
   "name": "bettertyping",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
+  "packageManager": "pnpm@10.33.0",
+  "engines": { "node": ">=20" },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview",
-    "start": "serve dist --single --listen $PORT"
-  },
-  "dependencies": {
-    "@radix-ui/react-icons": "^1.3.0",
-    "@radix-ui/react-label": "^2.1.0",
-    "@radix-ui/react-select": "^2.1.1",
-    "@radix-ui/react-slot": "^1.1.0",
-    "autoprefixer": "^10.4.20",
-    "axios": "^1.7.2",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.1.1",
-    "gsap": "^3.12.5",
-    "lucide-react": "^0.446.0",
-    "postcss": "^8.4.47",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.23.1",
-    "recharts": "^2.12.7",
-    "serve": "^14.2.6",
-    "tailwind-merge": "^2.5.2",
-    "tailwindcss": "^3.4.13",
-    "tailwindcss-animate": "^1.0.7"
+    "build": "pnpm -r build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --build --force",
+    "lint": "eslint .",
+    "format": "prettier --write ."
   },
   "devDependencies": {
-    "@types/node": "^22.7.3",
-    "@types/react": "^18.2.66",
-    "@types/react-dom": "^18.2.22",
-    "@vitejs/plugin-react": "^4.2.1",
-    "eslint": "^8.57.0",
-    "eslint-plugin-react": "^7.34.1",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.6",
-    "vite": "^5.2.12"
+    "@eslint/js": "^9.17.0",
+    "@types/node": "^22.10.2",
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.1",
+    "vitest": "^2.1.8"
   }
 }

@@ -191,37 +191,89 @@ This is the pillar's entire justification: no other site keeps per-keystroke tim
 
 ## 8. Design
 
-### Identity
-Wordmark stays lowercase `bettertyping`, rebuilt around **the Line** — a single stroke that recurs everywhere: it is the caret, the WPM curve, the underline in the logo, the page transition, the progress bar, the leaderboard rank marker. One idea, expressed relentlessly. That repetition is what makes an identity read as designed rather than assembled.
+**Art direction: E1 — Telemetry.** Locked. Specimens in `docs/art-directions-2.html`.
+
+### The governing rule
+
+**The interface is monochrome. Colour belongs exclusively to data.**
+
+The spectral ramp — magenta through indigo to ice — encodes speed, and appears
+only on the trace, the caret, the heatmap and data marks. It never touches a
+background, a button, a heading or a border. This single discipline is what
+separates "scientific instrument" from "video game HUD", and it keeps every
+future screen on-identity without re-deciding.
+
+### Tokens
+
+| Role | Value |
+|---|---|
+| ground | `#06080C` |
+| rule | `#161C24` |
+| rule (active) | `#3A4759` |
+| text | `#E7EEF7` |
+| text dim | `#5B6B80` |
+| data — fast | `#35E8FF` |
+| data — mid | `#7A6BFF` |
+| data — slow / error | `#FF3DB8` |
+
+### Type
+
+| Role | Face |
+|---|---|
+| Labels, identifiers, units, large numerals | **IBM Plex Sans Condensed 700**, uppercase, wide tracking |
+| Readouts and probabilities | **Azeret Mono** |
+| Test text | **IBM Plex Mono** — chosen purely for legibility at speed |
+
+Chrome: hairline frame with corner registration marks, a calibration rail on the
+measurement axis, dense micro-typography. Six variants remain hand-authored art
+directions rather than palette swaps, all obeying the governing rule.
 
 ### The signature interaction — The Line
-- **During the test:** a thin luminous path is drawn beneath the text in real time. Its height is instantaneous WPM; its hue shifts subtly with accuracy. One animated path, Canvas2D. Costs nothing, distracts no one, and is quietly mesmerising.
-- **At the finish:** the text dissolves upward and the Line *detaches*, scales, and settles into the results chart — one continuous transition, no cut, no route change. **The chart was never generated. You drew it.**
-- **In history:** every test you have ever taken is a Line. Your history is a wall of them; your PB glows. Racing your best self is two Lines drawn at once.
 
-### Rules of engagement for motion
-- Nothing animates *behind* text while a key can be pressed.
-- The test route ships **no WebGL and no motion library** — the Line is raw `requestAnimationFrame`.
-- WebGL is lazy-loaded on landing, results backdrop, and analytics only, with static fallbacks.
+- **During the test:** a spectral trace beneath the text, hue driven by
+  instantaneous speed, with keystroke event marks ticking along its baseline.
+  One canvas path, raw `requestAnimationFrame`, no library.
+- **At the finish:** the trace detaches, scales, and settles into the results
+  chart in one continuous transition. The chart was never generated — you drew it.
+- **Ever after:** every test in your history is a Line; your best one is lit.
+  Racing your past self is two Lines drawn at once.
+
+### E3 "Machine Vision" — inventory
+
+These ideas are **kept**, moved off the live test screen and into the surfaces
+where the player is reading rather than typing. Recorded here explicitly so they
+survive the gap between design and implementation.
+
+| Idea | Lands in | Stage |
+|---|---|---|
+| Confidence band (±1σ) around the trace | Results chart, history charts | 3, 5 |
+| Beating the forecast — trace leaving the band | Results reveal, as the celebrated moment | 3 |
+| Bigram risk rail with probability bars | Analytics dashboard; test **ready** state | 6 |
+| Detection boxes on words | Ready state only; fade on first keystroke | 2 |
+| Reticle on the active word | Persists during typing — the one annotation that stays | 2 |
+| Per-word latency prediction tags | Results review and replay scrubbing | 3, 5 |
+| `obs N · conf 0.93` model header | Analytics dashboard header | 6 |
+
+**Cold start.** Forecasts need roughly 10–20 completed tests before they mean
+anything. Every forecast surface therefore needs a designed empty state that
+reports how many tests remain before predictions unlock — not a blank rail.
+
+**Rules of engagement for motion**
+
+- Nothing animates behind text while a key can be pressed.
+- The test route ships no WebGL and no motion library.
+- WebGL is lazy-loaded on landing, results backdrop and analytics only, each
+  with a static fallback.
 - `prefers-reduced-motion` is a first-class path, not a disable switch.
-- Every animation is interruptible. Nothing blocks input, ever.
-
-### System
-- **Type:** a monospace with genuine character for test text (JetBrains Mono / Commit Mono / Martian Mono — to select), paired with a display face for headings. Self-hosted, subset, preloaded.
-- **Motion:** spring physics via `motion`; raw rAF for the Line. GSAP is dropped.
-- **Variants (6):** hand-authored art directions, not palette swaps — Void, Paper, Terminal, Dusk, Solar, Ink.
-- **Command palette (⌘K)** drives everything: mode, length, modifiers, theme, navigation. Tab+Enter restarts. The site is fully operable without the mouse.
-- **Accessibility:** WCAG AA contrast in all six variants, screen-reader-coherent results, full keyboard navigation, honest focus states.
 
 ### Performance budget
+
 | Target | Budget |
 |---|---|
 | Keystroke → paint | < 16 ms, p99 |
 | Test route JS | < 100 KB gzip |
 | LCP (landing) | < 1.5 s |
 | Dropped frames during a test | zero |
-
----
 
 ## 9. Screens
 
@@ -250,13 +302,17 @@ Wordmark stays lowercase `bettertyping`, rebuilt around **the Line** — a singl
 | **7** | Adaptive drills, XP / levels / streaks, daily challenge | Retention loop closed |
 | **8** | Six variants, settings, perf budget enforcement, a11y audit, launch | Ship |
 
+**Landed:** Stage 0 (monorepo, strict TS, CI, lint) and Stage 1 (`engine` + `metrics`,
+30 tests, replay determinism proven). The v1 app now lives in `legacy/` and still
+runs from there; it is deleted when `apps/web` replaces it in Stage 2.
+
 ---
 
 ## 11. Open questions
 
-1. **Typeface** — preference, or shall I bring a shortlist with specimens?
-2. **Accent colour** — do you have one, or do I propose the palette?
-3. **References** — name three sites whose *feel* you envy. This calibrates my taste against yours faster than any adjective.
+1. ~~Typeface~~ — settled by the art direction: IBM Plex Sans Condensed / Azeret Mono / IBM Plex Mono.
+2. ~~Accent colour~~ — settled: spectral data ramp, monochrome interface.
+3. **References** — still useful. Name three sites whose *feel* you envy.
 4. Do you already have Google / Discord OAuth applications registered?
 5. Any budget for a licensed typeface, or open-source only?
 6. Domain — staying put, or moving?
