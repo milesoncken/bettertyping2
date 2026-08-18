@@ -7,7 +7,9 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "pnpm -r build",
+    "dev": "pnpm --filter @bettertyping/web dev",
+    "build": "pnpm --filter @bettertyping/web build",
+    "build:packages": "tsc --build --force",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --build --force && tsc -p apps/web --noEmit",

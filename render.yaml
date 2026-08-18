@@ -1,0 +1,21 @@
+# Render service definition, kept in the repo so the deploy is reviewable rather
+# than remembered.
+#
+# The web app is a static SPA. Vite compiles the workspace TypeScript packages
+# directly from source, so the deploy never needs `tsc` — type checking is a CI
+# gate (see .github/workflows/ci.yml), not a build step.
+services:
+  - type: web
+    runtime: static
+    name: bettertyping
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+    staticPublishPath: apps/web/dist
+    routes:
+      # Single-page app: every path resolves to the shell.
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
