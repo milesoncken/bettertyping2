@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { TestConfig } from "@bettertyping/engine";
 import { useTypingTest } from "./useTypingTest.js";
 import { Words } from "./Words.js";
@@ -10,6 +10,8 @@ import { Perf } from "./Perf.js";
 import { TheLine } from "./TheLine.js";
 import type { TracePoint } from "./TheLine.js";
 import { perfEnabled } from "../lib/latency.js";
+import { loadProfile, playSwell, saveProfile } from "../lib/audio.js";
+import type { Profile } from "../lib/audio.js";
 import "./test-screen.css";
 
 const INITIAL: TestConfig = {
@@ -24,8 +26,19 @@ const INITIAL: TestConfig = {
 const VISIBLE_LINES = 3;
 
 export function TestScreen(): React.JSX.Element {
-  const { state, stateRef, originRef, restart, setConfig } = useTypingTest(INITIAL);
+  const [profile, setProfile] = useState<Profile>(loadProfile);
+  const profileRef = useRef<Profile>(profile);
+  profileRef.current = profile;
+
+  const { state, stateRef, originRef, restart, setConfig } = useTypingTest(
+    INITIAL,
+    profileRef,
+  );
+
   const pointsRef = useRef<TracePoint[]>([]);
+  const hostRef = useRef<HTMLDivElement>(null);
+  const testAnchorRef = useRef<HTMLDivElement>(null);
+  const chartAnchorRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const caretRef = useRef<HTMLDivElement>(null);
 
@@ -36,12 +49,20 @@ export function TestScreen(): React.JSX.Element {
     if (state.phase === "idle") pointsRef.current = [];
   }, [state.phase, state.config.seed]);
 
+  // The swell lands with the trace, not with the last keystroke.
+  useEffect(() => {
+    if (finished) playSwell(profileRef.current);
+  }, [finished]);
+
+  const changeProfile = (next: Profile): void => {
+    setProfile(next);
+    saveProfile(next);
+  };
+
   /**
-   * Caret placement and line scrolling.
-   *
-   * Both are measured from the active character's own box — one `querySelector`
-   * per keystroke. v1 diffed the bounding rects of every letter to guess where
-   * lines broke; this asks the element where it is.
+   * Caret placement and line scrolling, measured from the active character's own
+   * box — one querySelector per keystroke. v1 diffed the bounding rects of every
+   * letter to guess where lines broke; this asks the element where it is.
    */
   useLayoutEffect(() => {
     const track = trackRef.current;
@@ -52,8 +73,7 @@ export function TestScreen(): React.JSX.Element {
     if (!activeWord) return;
 
     const chars = activeWord.querySelectorAll<HTMLElement>(".char");
-    const index = state.cursor.char;
-    const target = chars[index];
+    const target = chars[state.cursor.char];
 
     let x: number;
     let y: number;
@@ -83,7 +103,18 @@ export function TestScreen(): React.JSX.Element {
     <main className="screen">
       <Frame />
 
-      <div className="screen-inner">
+      <div className="screen-inner" ref={hostRef}>
+        <TheLine
+          stateRef={stateRef}
+          originRef={originRef}
+          pointsRef={pointsRef}
+          spanMs={spanMs}
+          phase={state.phase}
+          hostRef={hostRef}
+          testAnchorRef={testAnchorRef}
+          chartAnchorRef={chartAnchorRef}
+        />
+
         <header className="bar">
           <div className="ident">
             bettertyping<em>//</em>
@@ -104,31 +135,43 @@ export function TestScreen(): React.JSX.Element {
         </header>
 
         {finished ? (
-          <Results state={state} onRestart={restart} />
+          <Results state={state} chartAnchorRef={chartAnchorRef} onRestart={restart} />
         ) : (
           <section className="field">
             <div className="viewport" data-idle={state.phase === "idle" || undefined}>
               <div className="track" ref={trackRef}>
-                <div className="caret" ref={caretRef} data-idle={state.phase === "idle" || undefined} />
+                <div
+                  className="caret"
+                  ref={caretRef}
+                  data-idle={state.phase === "idle" || undefined}
+                />
                 <Words words={state.words} cursorWord={state.cursor.word} />
               </div>
             </div>
           </section>
         )}
 
-        <section className="trace-block">
+        {/* The strip the trace occupies while typing, and its departure point.
+            It stays in the layout when finished so the flight has somewhere to
+            leave from — only its chrome fades. */}
+        <section className="trace-block" data-departed={finished || undefined}>
           <Rail />
-          <TheLine
-            stateRef={stateRef}
-            originRef={originRef}
-            pointsRef={pointsRef}
-            spanMs={spanMs}
-            running={state.phase === "running"}
-          />
+          <div className="trace-anchor" ref={testAnchorRef} />
+          <div className="line-legend">
+            <span className="label">slow</span>
+            <span className="line-ramp" />
+            <span className="label">fast</span>
+          </div>
         </section>
 
         <footer className="bar bottom">
-          <ModeBar config={state.config} onChange={setConfig} onRestart={restart} />
+          <ModeBar
+            config={state.config}
+            profile={profile}
+            onChange={setConfig}
+            onProfileChange={changeProfile}
+            onRestart={restart}
+          />
         </footer>
       </div>
 

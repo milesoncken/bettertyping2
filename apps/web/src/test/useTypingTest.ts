@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { applyKey, createState, finish } from "@bettertyping/engine";
+import { applyKey, createState, expectedChar, finish } from "@bettertyping/engine";
 import type { EngineState, TestConfig } from "@bettertyping/engine";
 import { recordLatency } from "../lib/latency.js";
+import { playKey } from "../lib/audio.js";
+import type { Profile } from "../lib/audio.js";
 
 /**
  * Binds the pure engine to the browser.
@@ -23,7 +25,11 @@ export interface TypingTest {
   setConfig: (patch: Partial<TestConfig>) => void;
 }
 
-export function useTypingTest(initial: TestConfig): TypingTest {
+export function useTypingTest(
+  initial: TestConfig,
+  /** Read at keypress time so changing profile never rebinds the listener. */
+  profileRef: React.RefObject<Profile>,
+): TypingTest {
   const [config, setConfigState] = useState<TestConfig>(initial);
   const [state, setState] = useState<EngineState>(() => createState(initial));
 
@@ -79,6 +85,11 @@ export function useTypingTest(initial: TestConfig): TypingTest {
       if (originRef.current === null) originRef.current = now;
       pendingKeyAt.current = now;
 
+      // Sound is driven by the same expectation the engine is about to check,
+      // so a wrong key sounds wrong on the frame it is pressed.
+      const expected = expectedChar(stateRef.current);
+      playKey(profileRef.current, event.key === "Backspace" || event.key === expected);
+
       setState((prev) =>
         applyKey(prev, {
           key: event.key,
@@ -91,7 +102,7 @@ export function useTypingTest(initial: TestConfig): TypingTest {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [restart]);
+  }, [restart, profileRef]);
 
   // ── Keystroke-to-paint measurement ────────────────────────────────────────
   useLayoutEffect(() => {

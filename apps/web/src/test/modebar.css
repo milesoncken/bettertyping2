@@ -35,6 +35,6 @@
   border-color: var(--text-dim);
 }
 
-.restart {
+.group.right {
   margin-left: auto;
 }

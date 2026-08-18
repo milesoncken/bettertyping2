@@ -12,22 +12,22 @@ export function Frame(): React.JSX.Element {
   );
 }
 
-/** The calibration rail on the speed axis. */
-export function Rail({ fullScale = 160 }: { fullScale?: number }): React.JSX.Element {
+/**
+ * The calibration rail. Tick marks only — the numeric labels are drawn by the
+ * trace itself, against whatever scale the run actually needed, so the two can
+ * never disagree.
+ */
+export function Rail(): React.JSX.Element {
   const ticks = [];
   for (let i = 0; i <= 16; i++) {
-    const major = i % 4 === 0;
-    const top = `${(i / 16) * 100}%`;
     ticks.push(
-      <div key={`t${i}`} className="tick" data-major={major || undefined} style={{ top }} />,
+      <div
+        key={i}
+        className="tick"
+        data-major={i % 4 === 0 || undefined}
+        style={{ top: `${(i / 16) * 100}%` }}
+      />,
     );
-    if (major) {
-      ticks.push(
-        <div key={`l${i}`} className="tick-label tabular" style={{ top }}>
-          {Math.round(fullScale - (i / 16) * fullScale)}
-        </div>,
-      );
-    }
   }
   return (
     <div className="rail" aria-hidden="true">

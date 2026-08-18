@@ -1,55 +1,117 @@
 import { useEffect, useRef } from "react";
-import type { EngineState } from "@bettertyping/engine";
+import type { EngineState, Phase } from "@bettertyping/engine";
 import { instantWpm } from "../lib/wpm.js";
+import { elapsedOf } from "../lib/clock.js";
 import "./line.css";
 
 /**
- * The Line.
+ * The Line — the signature interaction.
  *
- * A spectral trace drawn beneath the text while you type. Height is speed, hue
- * is speed, and the marks along its baseline are your actual keystrokes.
+ * While you type it is a spectral trace beneath the text: height is speed, hue
+ * is speed, and the marks along its baseline are your actual keystrokes. When
+ * the run ends it *detaches*, flies up, and settles into the results chart. The
+ * chart was never generated. You drew it.
  *
- * It runs entirely on `requestAnimationFrame` against a ref — no React state,
- * no motion library, nothing on the keystroke path. At the finish it hands its
- * points to the results view, which is where it detaches and becomes the chart.
+ * It is one full-area overlay canvas, and the thing that animates is the
+ * rectangle it plots into — lerped between two measured anchors. Nothing
+ * resizes, no element relayouts, and the canvas never leaves the compositor's
+ * good books. The whole thing is raw requestAnimationFrame; the test route
+ * carries no motion library.
  */
 
 const SAMPLE_EVERY_MS = 200;
-const FULL_SCALE_WPM = 160;
+const FLIGHT_MS = 900;
+const FLIGHT_DELAY_MS = 140;
+/** Samples either side of a point when computing its confidence band. */
+const BAND_WINDOW = 4;
 
 export interface TracePoint {
   t: number;
   wpm: number;
 }
 
+interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/**
+ * Floor for the speed axis. The scale grows past this to fit the run, because
+ * clipping a fast player's trace against a ceiling is worse than a moving axis —
+ * a flat line along the top is a lie about what they just did.
+ */
+const MIN_FULL_SCALE = 160;
+const SCALE_STEP = 40;
+
+/** The axis ceiling for a run: the floor, or the peak rounded up to a step. */
+export function scaleFor(points: readonly TracePoint[]): number {
+  let peak = 0;
+  for (const point of points) if (point.wpm > peak) peak = point.wpm;
+  if (peak <= MIN_FULL_SCALE) return MIN_FULL_SCALE;
+  return Math.ceil((peak * 1.05) / SCALE_STEP) * SCALE_STEP;
+}
+
 /** Spectral ramp: slow → mid → fast. The only colour in the product. */
-function rampColor(wpm: number): string {
+export function rampColor(wpm: number, alpha = 1, scale = MIN_FULL_SCALE): string {
   const stops: Array<[number, number, number]> = [
     [0xff, 0x3d, 0xb8],
     [0x7a, 0x6b, 0xff],
     [0x35, 0xe8, 0xff],
   ];
-  const x = Math.max(0, Math.min(1, wpm / FULL_SCALE_WPM)) * (stops.length - 1);
+  const x = Math.max(0, Math.min(1, wpm / scale)) * (stops.length - 1);
   const i = Math.min(stops.length - 2, Math.floor(x));
   const f = x - i;
   const a = stops[i] ?? stops[0]!;
   const b = stops[i + 1] ?? stops[stops.length - 1]!;
   const mix = (n: 0 | 1 | 2): number => Math.round(a[n] + (b[n] - a[n]) * f);
-  return `rgb(${mix(0)}, ${mix(1)}, ${mix(2)})`;
+  return `rgba(${mix(0)}, ${mix(1)}, ${mix(2)}, ${alpha})`;
+}
+
+const easeOut = (x: number): number => 1 - Math.pow(1 - x, 3);
+const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
+
+/**
+ * The ±1σ confidence band.
+ *
+ * In this stage it is computed from the player's own rhythm within the run: a
+ * centred rolling mean and standard deviation of their speed. Where the trace
+ * leaves the band, they broke their own pattern — and that overshoot is the
+ * thing worth celebrating. Stage 6 swaps the source for a model fitted across
+ * a player's history; the drawing code does not change.
+ */
+function bandOf(points: readonly TracePoint[]): Array<{ hi: number; lo: number }> {
+  return points.map((_, i) => {
+    const from = Math.max(0, i - BAND_WINDOW);
+    const to = Math.min(points.length - 1, i + BAND_WINDOW);
+    let sum = 0;
+    let count = 0;
+    for (let j = from; j <= to; j++) {
+      sum += points[j]!.wpm;
+      count += 1;
+    }
+    const mean = sum / count;
+    let variance = 0;
+    for (let j = from; j <= to; j++) variance += (points[j]!.wpm - mean) ** 2;
+    const sd = Math.sqrt(variance / count);
+    return { hi: mean + sd, lo: Math.max(0, mean - sd) };
+  });
 }
 
 interface TheLineProps {
   stateRef: React.RefObject<EngineState>;
   originRef: React.RefObject<number | null>;
-  /** Filled as the test runs, then read by the results view. */
   pointsRef: React.RefObject<TracePoint[]>;
-  /**
-   * Total run length in ms for a `time` test, so the trace advances left to
-   * right at a known rate. Null for `words`, where there is no known end and the
-   * trace instead grows to fill the width.
-   */
+  /** Run length in ms for a `time` test; null for `words`, which rescales. */
   spanMs: number | null;
-  running: boolean;
+  phase: Phase;
+  /** The element the canvas overlays and that anchors are measured against. */
+  hostRef: React.RefObject<HTMLElement | null>;
+  /** Where the trace lives while typing. */
+  testAnchorRef: React.RefObject<HTMLElement | null>;
+  /** Where it settles once the run is over. */
+  chartAnchorRef: React.RefObject<HTMLElement | null>;
 }
 
 export function TheLine({
@@ -57,10 +119,23 @@ export function TheLine({
   originRef,
   pointsRef,
   spanMs,
-  running,
+  phase,
+  hostRef,
+  testAnchorRef,
+  chartAnchorRef,
 }: TheLineProps): React.JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const lastSampleRef = useRef(0);
+  const flightRef = useRef(0);
+  const flightStartRef = useRef<number | null>(null);
+
+  // Reset the flight whenever a fresh run is dealt.
+  useEffect(() => {
+    if (phase !== "finished") {
+      flightRef.current = 0;
+      flightStartRef.current = null;
+    }
+  }, [phase]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -68,13 +143,11 @@ export function TheLine({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let frame = 0;
     let width = 0;
     let height = 0;
 
-    // Reset the sample clock whenever a run begins. Without this, a restart
-    // compares a near-zero elapsed against the previous run's final timestamp
-    // and the trace stays empty until it catches up.
     lastSampleRef.current = 0;
 
     const resize = (): void => {
@@ -90,79 +163,180 @@ export function TheLine({
     resize();
     window.addEventListener("resize", resize);
 
-    const draw = (): void => {
+    /** An anchor's box in canvas coordinates. */
+    const rectOf = (el: HTMLElement | null): Rect | null => {
+      const host = hostRef.current;
+      if (!el || !host) return null;
+      const a = el.getBoundingClientRect();
+      const h = host.getBoundingClientRect();
+      return { x: a.left - h.left, y: a.top - h.top, w: a.width, h: a.height };
+    };
+
+    const draw = (now: number): void => {
       const state = stateRef.current;
-      const origin = originRef.current;
       const points = pointsRef.current;
+      const elapsed = elapsedOf(state, originRef.current);
+      const running = state.phase === "running";
 
-      const elapsed = origin === null ? 0 : performance.now() - origin;
-
-      if (running && origin !== null && elapsed - lastSampleRef.current >= SAMPLE_EVERY_MS) {
-        lastSampleRef.current = elapsed;
-        points.push({ t: elapsed, wpm: instantWpm(state, elapsed) });
+      if (running && originRef.current !== null) {
+        if (elapsed - lastSampleRef.current >= SAMPLE_EVERY_MS) {
+          lastSampleRef.current = elapsed;
+          points.push({ t: elapsed, wpm: instantWpm(state, elapsed) });
+        }
       }
+
+      // ── Flight ────────────────────────────────────────────────────────────
+      if (state.phase === "finished") {
+        if (flightStartRef.current === null) flightStartRef.current = now + FLIGHT_DELAY_MS;
+        const t = (now - flightStartRef.current) / FLIGHT_MS;
+        flightRef.current = reduced ? 1 : Math.max(0, Math.min(1, t));
+      }
+      const flight = easeOut(flightRef.current);
+
+      const testRect = rectOf(testAnchorRef.current);
+      const chartRect = rectOf(chartAnchorRef.current);
+      const plot: Rect | null =
+        testRect === null
+          ? chartRect
+          : chartRect === null || flight === 0
+            ? testRect
+            : {
+                x: lerp(testRect.x, chartRect.x, flight),
+                y: lerp(testRect.y, chartRect.y, flight),
+                w: lerp(testRect.w, chartRect.w, flight),
+                h: lerp(testRect.h, chartRect.h, flight),
+              };
 
       ctx.clearRect(0, 0, width, height);
-
-      const top = 10;
-      const bottom = height - 16;
-      // A time test maps to its full duration; a words test rescales as it goes,
-      // with a floor so the first few seconds are not a vertical cliff.
-      const span = spanMs === null ? Math.max(elapsed, 4000) : Math.max(spanMs, elapsed, 1);
-      const xAt = (t: number): number => (t / span) * width;
-      const yAt = (wpm: number): number =>
-        bottom - Math.min(1, wpm / FULL_SCALE_WPM) * (bottom - top);
-
-      // Keystroke marks — the raw events, not a smoothed abstraction.
-      ctx.strokeStyle = "#22303f";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (const event of state.events) {
-        if (event.kind !== "char" && event.kind !== "space") continue;
-        const x = Math.round(xAt(event.t)) + 0.5;
-        ctx.moveTo(x, bottom + 4);
-        ctx.lineTo(x, bottom + (event.correct ? 8 : 12));
+      if (!plot || points.length === 0) {
+        frame = requestAnimationFrame(draw);
+        return;
       }
-      ctx.stroke();
 
-      if (points.length > 1) {
-        // Fill under the curve, faint, keyed to the current speed.
-        const lastPoint = points[points.length - 1]!;
-        const fill = ctx.createLinearGradient(0, top, 0, bottom);
-        const tint = rampColor(lastPoint.wpm);
-        fill.addColorStop(0, tint.replace("rgb", "rgba").replace(")", ", 0.16)"));
-        fill.addColorStop(1, tint.replace("rgb", "rgba").replace(")", ", 0)"));
+      const span =
+        spanMs === null ? Math.max(elapsed, 4000) : Math.max(spanMs, elapsed, 1);
+      const scale = scaleFor(points);
+      const baseline = plot.y + plot.h;
+      const xAt = (t: number): number => plot.x + (t / span) * plot.w;
+      const yAt = (wpm: number): number =>
+        baseline - Math.min(1, wpm / scale) * plot.h;
+
+      // ── The axis ──────────────────────────────────────────────────────────
+      // Drawn here rather than in the DOM so the labels and the plot can never
+      // disagree about the scale, whatever the run pushes it to.
+      const divisions = [0.25, 0.5, 0.75, 1] as const;
+      if (flight > 0.15) {
+        ctx.strokeStyle = `rgba(58, 71, 89, ${0.5 * flight})`;
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(xAt(points[0]!.t), bottom);
-        for (const point of points) ctx.lineTo(xAt(point.t), yAt(point.wpm));
-        ctx.lineTo(xAt(lastPoint.t), bottom);
-        ctx.closePath();
-        ctx.fillStyle = fill;
-        ctx.fill();
-
-        // The trace itself, coloured segment by segment: hue *is* speed.
-        ctx.lineWidth = 1.6;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        for (let i = 1; i < points.length; i++) {
-          const a = points[i - 1]!;
-          const b = points[i]!;
-          ctx.beginPath();
-          ctx.moveTo(xAt(a.t), yAt(a.wpm));
-          ctx.lineTo(xAt(b.t), yAt(b.wpm));
-          ctx.strokeStyle = rampColor((a.wpm + b.wpm) / 2);
-          ctx.stroke();
+        for (const fraction of divisions.slice(0, 3)) {
+          const y = Math.round(yAt(scale * fraction)) + 0.5;
+          ctx.moveTo(plot.x, y);
+          ctx.lineTo(plot.x + plot.w, y);
         }
+        ctx.stroke();
+      }
 
-        // The head — a caret, because that is what it is.
-        const hx = xAt(lastPoint.t);
-        const hy = yAt(lastPoint.wpm);
-        ctx.strokeStyle = rampColor(lastPoint.wpm);
+      ctx.font = '500 9px "Azeret Mono", ui-monospace, monospace';
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "rgba(91, 107, 128, 0.9)";
+      for (const fraction of divisions) {
+        ctx.fillText(
+          Math.round(scale * fraction).toString(),
+          plot.x - 8,
+          yAt(scale * fraction),
+        );
+      }
+      ctx.fillText("0", plot.x - 8, baseline);
+
+      // ── Keystroke marks, which belong to the live test ────────────────────
+      if (flight < 1) {
+        ctx.strokeStyle = `rgba(34, 48, 63, ${1 - flight})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (const event of state.events) {
+          if (event.kind !== "char" && event.kind !== "space") continue;
+          const x = Math.round(xAt(event.t)) + 0.5;
+          ctx.moveTo(x, baseline + 4);
+          ctx.lineTo(x, baseline + (event.correct ? 8 : 12));
+        }
+        ctx.stroke();
+      }
+
+      // ── The confidence band, revealed as the chart lands ─────────────────
+      const bandAlpha = Math.max(0, (flight - 0.45) / 0.55);
+      if (bandAlpha > 0 && points.length > 2) {
+        const band = bandOf(points);
+        ctx.beginPath();
+        points.forEach((point, i) => {
+          const x = xAt(point.t);
+          const y = yAt(band[i]!.hi);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        for (let i = points.length - 1; i >= 0; i--) {
+          ctx.lineTo(xAt(points[i]!.t), yAt(band[i]!.lo));
+        }
+        ctx.closePath();
+        ctx.fillStyle = `rgba(231, 238, 247, ${0.055 * bandAlpha})`;
+        ctx.fill();
+        ctx.strokeStyle = `rgba(231, 238, 247, ${0.10 * bandAlpha})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Where the run broke its own rhythm, mark it.
+        ctx.fillStyle = rampColor(scale, 0.9 * bandAlpha, scale);
+        points.forEach((point, i) => {
+          if (point.wpm <= band[i]!.hi) return;
+          ctx.beginPath();
+          ctx.arc(xAt(point.t), yAt(point.wpm), 1.7, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      }
+
+      // ── Fill under the curve ─────────────────────────────────────────────
+      const last = points[points.length - 1]!;
+      const fill = ctx.createLinearGradient(0, plot.y, 0, baseline);
+      fill.addColorStop(0, rampColor(last.wpm, 0.16, scale));
+      fill.addColorStop(1, rampColor(last.wpm, 0, scale));
+      ctx.beginPath();
+      ctx.moveTo(xAt(points[0]!.t), baseline);
+      for (const point of points) ctx.lineTo(xAt(point.t), yAt(point.wpm));
+      ctx.lineTo(xAt(last.t), baseline);
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+
+      // ── The trace: hue is speed, segment by segment ───────────────────────
+      ctx.lineWidth = lerp(1.6, 1.9, flight);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      for (let i = 1; i < points.length; i++) {
+        const a = points[i - 1]!;
+        const b = points[i]!;
+        ctx.beginPath();
+        ctx.moveTo(xAt(a.t), yAt(a.wpm));
+        ctx.lineTo(xAt(b.t), yAt(b.wpm));
+        ctx.strokeStyle = rampColor((a.wpm + b.wpm) / 2, 1, scale);
+        ctx.stroke();
+      }
+
+      // ── The head: a caret while running, a terminal dot once landed ───────
+      const hx = xAt(last.t);
+      const hy = yAt(last.wpm);
+      ctx.strokeStyle = rampColor(last.wpm, 1, scale);
+      ctx.fillStyle = rampColor(last.wpm, 1, scale);
+      if (flight < 0.5) {
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(hx, hy - 7);
         ctx.lineTo(hx, hy + 7);
         ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.arc(hx, hy, 2.6, 0, Math.PI * 2);
+        ctx.fill();
       }
 
       frame = requestAnimationFrame(draw);
@@ -173,16 +347,7 @@ export function TheLine({
       cancelAnimationFrame(frame);
       window.removeEventListener("resize", resize);
     };
-  }, [stateRef, originRef, pointsRef, spanMs, running]);
+  }, [stateRef, originRef, pointsRef, spanMs, hostRef, testAnchorRef, chartAnchorRef]);
 
-  return (
-    <div className="line-wrap">
-      <canvas ref={canvasRef} className="line-canvas" aria-hidden="true" />
-      <div className="line-legend">
-        <span className="label">slow</span>
-        <span className="line-ramp" />
-        <span className="label">fast</span>
-      </div>
-    </div>
-  );
+  return <canvas ref={canvasRef} className="line-canvas" aria-hidden="true" />;
 }

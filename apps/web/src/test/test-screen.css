@@ -12,9 +12,13 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  /* Establishes the coordinate space the trace's anchors are measured in. */
+  isolation: isolate;
 }
 
 .bar {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -43,6 +47,8 @@
 
 /* ── The text field ── */
 .field {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex: 1;
   min-height: 0;
@@ -51,17 +57,34 @@
   padding-left: 4.6rem;
 }
 
-/* The trace and its speed axis, directly beneath the text it describes. */
+/* The trace and its speed axis, directly beneath the text it describes. The
+   anchor is an empty box: the trace itself lives on an overlay canvas and plots
+   into whatever rectangle this occupies. */
 .trace-block {
+  position: relative;
   display: flex;
   gap: 1.4rem;
   flex: none;
   height: 120px;
+  z-index: 1;
 }
 
-.trace-block .line-wrap {
+.trace-anchor {
   flex: 1;
   min-width: 0;
+}
+
+.trace-block .line-legend {
+  position: absolute;
+  right: 0;
+  bottom: -2px;
+}
+
+/* Once the trace has flown, its live chrome has nothing left to label. */
+.trace-block[data-departed] {
+  opacity: 0;
+  transition: opacity 420ms ease-out;
+  pointer-events: none;
 }
 
 .viewport {

@@ -309,6 +309,17 @@ reports how many tests remain before predictions unlock — not a blank rail.
 - **2** — `apps/web`: test screen, the Line, results. Measured in Chromium at
   **p50 8.5 ms / p99 15.4 ms** keystroke-to-paint, **68 KB gzip** against a 100 KB
   budget. `legacy/` is deleted once history and leaderboards land in Stage 5.
+- **3** — the signature moment: the trace detaches and flies into the results
+  chart, E3's ±1σ confidence band, synthesised switch audio, and the lazy WebGL
+  results backdrop. Test route **71 KB gzip**; the shader is a separate 1.4 KB
+  chunk the test route never loads.
+
+**Confidence band, honestly scoped.** In Stage 3 the band is ±1σ of the player's
+own rhythm *within the run* — a centred rolling mean and standard deviation of
+their speed. It needs no history, so it works on a first visit, and the dots mark
+where they broke their own pattern. Stage 6 swaps the source for a model fitted
+across a player's history; the drawing code does not change. The cold-start
+state E3 requires is therefore already solved: there is never an empty band.
 
 **A note on the latency budget.** The original "< 16 ms p99" was measuring the
 wrong thing: at 60 Hz the floor is one vsync interval, so a keystroke landing

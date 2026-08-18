@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { EngineState } from "@bettertyping/engine";
 import { liveAccuracy, liveWpm } from "../lib/wpm.js";
+import { elapsedOf } from "../lib/clock.js";
 import "./readouts.css";
 
 /**
@@ -40,8 +41,7 @@ export function Readouts({
   useEffect(() => {
     const tick = (): void => {
       const state = stateRef.current;
-      const origin = originRef.current;
-      const elapsed = origin === null ? 0 : performance.now() - origin;
+      const elapsed = elapsedOf(state, originRef.current);
 
       const strokes = state.events.filter(
         (e) => e.kind === "char" || e.kind === "space",
@@ -58,6 +58,7 @@ export function Readouts({
     };
 
     tick();
+    if (!running) return;
     const id = window.setInterval(tick, 100);
     return () => window.clearInterval(id);
   }, [stateRef, originRef, duration, running]);

@@ -1,4 +1,6 @@
 import type { TestConfig } from "@bettertyping/engine";
+import { PROFILES } from "../lib/audio.js";
+import type { Profile } from "../lib/audio.js";
 import "./modebar.css";
 
 /**
@@ -9,14 +11,22 @@ import "./modebar.css";
 
 interface ModeBarProps {
   config: TestConfig;
+  profile: Profile;
   onChange: (patch: Partial<TestConfig>) => void;
+  onProfileChange: (profile: Profile) => void;
   onRestart: () => void;
 }
 
 const WORD_COUNTS = [25, 50, 100] as const;
 const DURATIONS = [15, 30, 60] as const;
 
-export function ModeBar({ config, onChange, onRestart }: ModeBarProps): React.JSX.Element {
+export function ModeBar({
+  config,
+  profile,
+  onChange,
+  onProfileChange,
+  onRestart,
+}: ModeBarProps): React.JSX.Element {
   const isTime = config.mode === "time";
 
   return (
@@ -64,7 +74,20 @@ export function ModeBar({ config, onChange, onRestart }: ModeBarProps): React.JS
         </Chip>
       </div>
 
-      <button className="chip restart" onClick={onRestart}>
+      <div className="group right" role="group" aria-label="Keystroke sound">
+        <button
+          className="chip"
+          onClick={() => {
+            const next = PROFILES[(PROFILES.indexOf(profile) + 1) % PROFILES.length];
+            onProfileChange(next ?? "off");
+          }}
+          aria-label={`Keystroke sound: ${profile}. Click to change.`}
+        >
+          sound · {profile}
+        </button>
+      </div>
+
+      <button className="chip" onClick={onRestart}>
         restart
       </button>
     </div>
