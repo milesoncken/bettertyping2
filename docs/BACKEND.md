@@ -98,26 +98,39 @@ in its own transaction.
 
 ## 5. Deploying to Render
 
-Two services and a database.
+All three services are described in [`render.yaml`](../render.yaml). In Render:
+**New → Blueprint**, point it at this repo, and it creates the database, the API
+and the static site together.
 
-**Postgres** — create it first and copy the internal connection string.
+Four values are deliberately left out of the blueprint, because they are either
+secrets or depend on hostnames that do not exist until the first deploy. Set them
+in the dashboard afterwards, then redeploy:
 
-**API** (Web Service, Node)
-- Build: `corepack enable && pnpm install --frozen-lockfile`
-- Start: `pnpm --filter @bettertyping/api migrate && pnpm --filter @bettertyping/api start`
-- Environment: everything from the table above, with `GOOGLE_REDIRECT_URI` and
-  `WEB_ORIGIN` pointing at the deployed hosts.
+| Service | Variable | Value |
+|---|---|---|
+| API | `GOOGLE_CLIENT_ID` | from the Google console |
+| API | `GOOGLE_CLIENT_SECRET` | from the Google console |
+| API | `GOOGLE_REDIRECT_URI` | `https://<api-host>/auth/google/callback` |
+| API | `WEB_ORIGIN` | `https://<web-host>` |
+| Web | `VITE_API_URL` | `https://<api-host>` |
 
-**Web** (Static Site)
-- Build: `corepack enable && pnpm install --frozen-lockfile && pnpm build`
-- Publish directory: `apps/web/dist`
-- Rewrite `/*` → `/index.html`
-- Environment: `VITE_API_URL=https://<your-api-host>`
+Then add the deployed redirect URI to the Google console's authorised list, or
+sign-in will fail with a redirect mismatch.
 
-Cookies are `SameSite=Lax`, so the API and the web app should share a parent
-domain in production (`bettertyping.app` and `api.bettertyping.app`). On entirely
-unrelated domains the session cookie will be dropped by browsers that block
-third-party cookies.
+`VITE_API_URL` is inlined by Vite at build time, so changing it requires a
+rebuild rather than a restart.
+
+### Two things that will bite
+
+**Cookies are `SameSite=Lax`.** The API and the web app should share a parent
+domain in production — `bettertyping.app` and `api.bettertyping.app`. On
+unrelated domains the session cookie is dropped by browsers that block
+third-party cookies, and sign-in will appear to succeed while `/me` keeps
+returning 401. (`localhost` and `127.0.0.1` count as unrelated, which is worth
+remembering when testing locally.)
+
+**Render's free Postgres expires 30 days after creation** and is then deleted.
+Move to a paid instance before there is data worth keeping.
 
 ---
 

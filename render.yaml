@@ -1,21 +1,93 @@
-# Render service definition, kept in the repo so the deploy is reviewable rather
-# than remembered.
+# Render Blueprint — the whole deploy, in the repo, reviewable rather than
+# remembered.
 #
-# The web app is a static SPA. Vite compiles the workspace TypeScript packages
-# directly from source, so the deploy never needs `tsc` — type checking is a CI
-# gate (see .github/workflows/ci.yml), not a build step.
+# Three pieces: a Postgres database, the API, and the static web app.
+#
+# Adopting this file: Render → New → Blueprint, point it at this repo. Values
+# marked `sync: false` are deliberately not in here — they are either secrets or
+# they depend on the hostnames Render assigns, so you set them once in the
+# dashboard after the first deploy.
+
+databases:
+  # NOTE: Render's free Postgres expires 30 days after creation and is then
+  # deleted. Move to a paid instance before you have data you care about.
+  - name: bettertyping-db
+    databaseName: bettertyping
+    user: bettertyping
+    plan: free
+
 services:
+  # ── API ──────────────────────────────────────────────────────────────────
+  # Bundled to plain JavaScript by esbuild, so nothing needs a TypeScript loader
+  # at runtime. Migrations run on start: they are tracked in a `_migrations`
+  # table, so re-running is a no-op and a restart costs nothing.
+  #
+  # On a paid instance prefer `preDeployCommand` for the migration, so schema
+  # changes land before the new code starts rather than alongside it.
+  - type: web
+    runtime: node
+    name: bettertyping-api
+    plan: free
+    healthCheckPath: /health
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @bettertyping/api build
+    startCommand: pnpm --filter @bettertyping/api migrate && pnpm --filter @bettertyping/api start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bettertyping-db
+          property: connectionString
+
+      # Signs the short-lived OAuth handshake cookies. Render generates it; it
+      # never needs to be seen by a human.
+      - key: SESSION_SECRET
+        generateValue: true
+
+      - key: NODE_ENV
+        value: production
+
+      # From the Google Cloud console. The secret is a real secret and must never
+      # reach the frontend bundle. See docs/BACKEND.md for creating the app.
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+
+      # Both of these are full URLs including the scheme, and Render cannot build
+      # them from a service reference — so they are set by hand once the
+      # hostnames exist.
+      #
+      #   GOOGLE_REDIRECT_URI  https://<api-host>/auth/google/callback
+      #                        Must match the Google console character for character.
+      #   WEB_ORIGIN           https://<web-host>
+      #                        CORS origin and where sign-in returns to.
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
+      - key: WEB_ORIGIN
+        sync: false
+
+  # ── Web ──────────────────────────────────────────────────────────────────
+  # A static SPA. Vite compiles the workspace TypeScript from source, so the
+  # deploy never runs `tsc` — type checking is a CI gate, not a build step.
   - type: web
     runtime: static
     name: bettertyping
     buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
     staticPublishPath: apps/web/dist
+    envVars:
+      # Vite inlines this at build time, so changing it needs a rebuild, not just
+      # a restart. Full URL with scheme: https://<api-host>
+      #
+      # Left unset, the app still works — it deals its own seeds and plays
+      # unranked. What you lose without an API is ranking, not typing.
+      - key: VITE_API_URL
+        sync: false
     routes:
       # Single-page app: every path resolves to the shell.
       - type: rewrite
         source: /*
         destination: /index.html
     headers:
+      # Vite fingerprints these filenames, so they can be cached forever.
       - path: /assets/*
         name: Cache-Control
         value: public, max-age=31536000, immutable
