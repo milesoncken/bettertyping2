@@ -1,0 +1,775 @@
+<title>bettertyping 2 Spec</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Martian+Mono:wght@600;700&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300&display=swap">
+
+<style>
+  /* ── Dark-first token set. Product is dark-first, so :root carries dark. ── */
+  :root {
+    --bg:        #0A0C11;
+    --surface:   #10141D;
+    --surface-2: #161B27;
+    --rule:      #232A3A;
+    --rule-soft: #1A2030;
+    --text:      #E7EAF3;
+    --text-dim:  #B4BCCE;
+    --muted:     #8892A8;
+    --accent:    #FFB525;
+    --accent-2:  #C9871A;
+    --accent-ink:#FFB525;
+    --rose:      #FF6183;
+    --rose-ink:  #FF6183;
+    --glow:      rgba(255,181,37,.16);
+
+    --f-display: "Martian Mono", ui-monospace, monospace;
+    --f-body:    "Newsreader", Georgia, serif;
+    --f-mono:    "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+    --measure: 68ch;
+    --gutter: 5.5rem;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg:        #F1F3F7;
+      --surface:   #FFFFFF;
+      --surface-2: #E9ECF3;
+      --rule:      #D3D9E5;
+      --rule-soft: #E2E6EF;
+      --text:      #0D111A;
+      --text-dim:  #333B4C;
+      --muted:     #5C6479;
+      --accent:    #B87407;
+      --accent-2:  #8A5600;
+      --accent-ink:#8A5600;
+      --rose:      #C22B4E;
+      --rose-ink:  #A81F41;
+      --glow:      rgba(184,116,7,.12);
+    }
+  }
+
+  :root[data-theme="light"] {
+    --bg:        #F1F3F7;
+    --surface:   #FFFFFF;
+    --surface-2: #E9ECF3;
+    --rule:      #D3D9E5;
+    --rule-soft: #E2E6EF;
+    --text:      #0D111A;
+    --text-dim:  #333B4C;
+    --muted:     #5C6479;
+    --accent:    #B87407;
+    --accent-2:  #8A5600;
+    --accent-ink:#8A5600;
+    --rose:      #C22B4E;
+    --rose-ink:  #A81F41;
+    --glow:      rgba(184,116,7,.12);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--f-body);
+    font-size: 19px;
+    line-height: 1.62;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 1.5rem 8rem;
+  }
+
+  /* ── Hero ───────────────────────────────────────────────── */
+  .hero { padding: 5rem 0 3rem; display: flex; flex-direction: column; gap: 1.75rem; }
+
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: .72rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    align-items: center;
+  }
+  .eyebrow .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); display: inline-block; }
+
+  h1 {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: clamp(2.1rem, 6.5vw, 3.9rem);
+    line-height: 1.02;
+    letter-spacing: -.02em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h1 .two { color: var(--accent); }
+
+  .deck {
+    font-size: clamp(1.1rem, 2.4vw, 1.4rem);
+    line-height: 1.5;
+    color: var(--text-dim);
+    max-width: 40ch;
+    margin: 0;
+    font-weight: 300;
+  }
+
+  .trace {
+    position: relative;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .trace canvas { display: block; width: 100%; height: 200px; }
+  .trace-label {
+    position: absolute;
+    left: 1rem; top: .85rem;
+    font-family: var(--f-mono);
+    font-size: .66rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .trace-readout {
+    position: absolute;
+    right: 1rem; top: .7rem;
+    font-family: var(--f-mono);
+    font-size: .95rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+  }
+  .trace-caption {
+    font-family: var(--f-mono);
+    font-size: .74rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin: .85rem 0 0;
+  }
+
+  /* ── Sections on the rule ───────────────────────────────── */
+  main { border-top: 1px solid var(--rule); margin-top: 3rem; }
+
+  section {
+    position: relative;
+    padding: 3.5rem 0 .5rem var(--gutter);
+    border-left: 1px solid var(--rule-soft);
+    margin-left: .25rem;
+  }
+  section::before {
+    content: attr(data-n);
+    position: absolute;
+    left: 0;
+    top: 3.6rem;
+    transform: translateX(-50%);
+    background: var(--bg);
+    padding: .35rem 0;
+    font-family: var(--f-mono);
+    font-size: .72rem;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: .06em;
+    width: 2.4em;
+    text-align: center;
+  }
+
+  h2 {
+    font-family: var(--f-display);
+    font-size: clamp(1.15rem, 2.6vw, 1.5rem);
+    font-weight: 600;
+    letter-spacing: -.01em;
+    line-height: 1.25;
+    margin: 0 0 1.25rem;
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-family: var(--f-mono);
+    font-size: .78rem;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 2.25rem 0 .9rem;
+  }
+
+  p { max-width: var(--measure); margin: 0 0 1.1rem; }
+  p.lead { color: var(--text-dim); }
+  a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  strong { font-weight: 600; color: var(--text); }
+  em.term { font-style: normal; font-family: var(--f-mono); font-size: .88em; color: var(--accent-ink); }
+  code {
+    font-family: var(--f-mono);
+    font-size: .82em;
+    background: var(--surface-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: 2px;
+    padding: .1em .38em;
+  }
+
+  ul.plain { max-width: var(--measure); margin: 0 0 1.2rem; padding: 0; list-style: none; display: flex; flex-direction: column; gap: .7rem; }
+  ul.plain li { padding-left: 1.1rem; position: relative; }
+  ul.plain li::before { content: "—"; position: absolute; left: 0; color: var(--muted); font-family: var(--f-mono); font-size: .8em; }
+
+  /* ── Tables ─────────────────────────────────────────────── */
+  .wide { margin-left: calc(var(--gutter) * -1); }
+  .scroll { overflow-x: auto; margin: 0 0 1.4rem; }
+  table { border-collapse: collapse; width: 100%; min-width: 480px; font-family: var(--f-mono); font-size: .8rem; }
+  th {
+    text-align: left;
+    font-weight: 500;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-size: .66rem;
+    color: var(--muted);
+    padding: .55rem .9rem .55rem 0;
+    border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+  td {
+    padding: .68rem .9rem .68rem 0;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+  }
+  td:first-child { color: var(--text); white-space: nowrap; }
+  td.num { color: var(--accent); }
+
+  /* ── Findings ───────────────────────────────────────────── */
+  .findings { display: flex; flex-direction: column; gap: 0; margin-bottom: 1.5rem; }
+  .finding {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    gap: 1.25rem;
+    padding: .95rem 0;
+    border-bottom: 1px solid var(--rule-soft);
+    align-items: start;
+  }
+  .chip {
+    font-family: var(--f-mono);
+    font-size: .6rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    padding: .28rem .5rem;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    justify-self: start;
+    margin-top: .25rem;
+    white-space: nowrap;
+  }
+  .chip.arch { color: var(--muted); }
+  .chip.bug { color: var(--rose-ink); }
+  .chip.integ { color: var(--accent-ink); }
+  .finding p { margin: 0; font-size: .95rem; }
+  .finding .src { font-family: var(--f-mono); font-size: .74rem; color: var(--muted); display: block; margin-top: .3rem; }
+
+  /* ── Callout ────────────────────────────────────────────── */
+  .callout {
+    border-left: 2px solid var(--accent);
+    background: var(--glow);
+    padding: 1.15rem 1.3rem;
+    margin: 1.6rem 0 1.6rem;
+    max-width: var(--measure);
+  }
+  .callout p { margin: 0; font-size: 1rem; }
+  .callout p + p { margin-top: .7rem; }
+
+  pre {
+    font-family: var(--f-mono);
+    font-size: .76rem;
+    line-height: 1.7;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 1.15rem 1.3rem;
+    overflow-x: auto;
+    color: var(--text-dim);
+    margin: 0 0 1.4rem;
+  }
+  pre .c { color: var(--muted); }
+  pre .k { color: var(--accent-ink); }
+
+  /* ── Beats (the Line, three moments) ────────────────────── */
+  .beats { display: grid; gap: 1px; background: var(--rule-soft); border: 1px solid var(--rule-soft); margin-bottom: 1.5rem; }
+  @media (min-width: 800px) { .beats { grid-template-columns: repeat(3, 1fr); } }
+  .beat { background: var(--bg); padding: 1.35rem 1.3rem; display: flex; flex-direction: column; gap: .55rem; }
+  .beat h4 {
+    font-family: var(--f-mono);
+    font-size: .68rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    margin: 0;
+  }
+  .beat p { font-size: .92rem; margin: 0; max-width: none; color: var(--text-dim); }
+
+  /* ── Palette ────────────────────────────────────────────── */
+  .swatches { display: flex; flex-wrap: wrap; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-bottom: 1.4rem; }
+  .sw { flex: 1 1 120px; padding: 1rem .85rem 0.8rem; display: flex; flex-direction: column; gap: 2.4rem; }
+  .sw span { font-family: var(--f-mono); font-size: .64rem; letter-spacing: .1em; text-transform: uppercase; }
+  .sw b { font-family: var(--f-mono); font-size: .7rem; font-weight: 400; }
+
+  /* ── Questions ──────────────────────────────────────────── */
+  ol.q { max-width: var(--measure); padding-left: 0; list-style: none; counter-reset: q; display: flex; flex-direction: column; gap: 1rem; margin: 0; }
+  ol.q li { counter-increment: q; position: relative; padding-left: 2.4rem; }
+  ol.q li::before {
+    content: counter(q, decimal-leading-zero);
+    position: absolute; left: 0; top: .18em;
+    font-family: var(--f-mono); font-size: .74rem; color: var(--accent);
+  }
+
+  footer {
+    margin-top: 5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--f-mono);
+    font-size: .72rem;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: space-between;
+  }
+
+  @media (max-width: 720px) {
+    :root { --gutter: 2.5rem; }
+    body { font-size: 18px; }
+    .finding { grid-template-columns: 1fr; gap: .5rem; }
+    .wide { margin-left: calc(var(--gutter) * -1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="hero">
+    <div class="eyebrow">
+      <span>product &amp; architecture spec</span><span class="dot"></span>
+      <span>draft for review</span><span class="dot"></span>
+      <span>18 aug 2026</span>
+    </div>
+
+    <h1>bettertyping <span class="two">2</span></h1>
+
+    <p class="deck">A ground-up rewrite. One signature idea: the test draws its own results.</p>
+
+    <div class="trace">
+      <span class="trace-label">the line — live</span>
+      <span class="trace-readout" id="readout">0 wpm</span>
+      <canvas id="line" aria-label="An animated trace of words-per-minute being drawn in real time, the signature interaction of the redesign."></canvas>
+    </div>
+    <p class="trace-caption">
+      This is the whole thesis, running. While you type, this path is drawn beneath the text — height is instantaneous WPM,<br>
+      hue shifts with accuracy. At the finish it detaches from the page and becomes your results chart.
+    </p>
+  </header>
+
+  <main>
+
+    <section data-n="00">
+      <h2>What we decided</h2>
+      <p class="lead">Fourteen forks, closed. Everything below follows from this table.</p>
+      <div class="wide scroll">
+        <table>
+          <thead><tr><th>Decision</th><th>Choice</th></tr></thead>
+          <tbody>
+            <tr><td>Scope</td><td>Full-stack rewrite, monorepo in this repo. <code>master</code> untouched until merge.</td></tr>
+            <tr><td>Frontend</td><td>React 19 + TypeScript (strict) + Vite, SPA</td></tr>
+            <tr><td>Backend</td><td>Node + TypeScript + Fastify</td></tr>
+            <tr><td>Database</td><td>Postgres + Drizzle ORM — clean slate, no migration</td></tr>
+            <tr><td>Integrity</td><td>Server replays every submission and recomputes results</td></tr>
+            <tr><td>Auth</td><td>Google + Discord OAuth; guest play, claimable on sign-in</td></tr>
+            <tr><td>Modes v1</td><td>time, words, + punctuation / numbers modifiers</td></tr>
+            <tr><td>Coaching</td><td>Deterministic analytics → generated drills. No LLM.</td></tr>
+            <tr><td>Mobile</td><td>Responsive site; the test itself is desktop-only by design</td></tr>
+            <tr><td>Motion</td><td>Signature-but-calm during a test; spectacle around it</td></tr>
+            <tr><td>Render tech</td><td>WebGL on showcase surfaces only — never the test screen</td></tr>
+            <tr><td>Theming</td><td>One signature art direction + 6 hand-authored variants</td></tr>
+            <tr><td>Audio</td><td>Switch profiles + results swell, off by default</td></tr>
+            <tr><td>Curriculum</td><td>Adaptive drills, XP / levels / streaks, daily challenge</td></tr>
+            <tr><td>Hosting</td><td>Render — static site, web service, Postgres</td></tr>
+            <tr><td>Brand</td><td>Name stays <em class="term">bettertyping</em>; new wordmark and motion identity</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Out of v1, deliberately:</strong> multiplayer racing, quotes, custom text, code mode, zen mode, LLM coaching, mobile typing.</p>
+    </section>
+
+    <section data-n="01">
+      <h2>What was actually wrong</h2>
+      <p class="lead">Recorded so the rewrite is judged against real defects rather than taste. Every line below is from the current codebase.</p>
+
+      <h3>Architecture</h3>
+      <div class="findings">
+        <div class="finding">
+          <span class="chip arch">Structural</span>
+          <p><strong>State lives in the DOM.</strong> The engine mutates <code>classList</code> on live nodes and reads truth back out of them. React is a shell wrapped around imperative DOM writes; every downstream feature inherits that fragility.
+          <span class="src">TextArea.jsx — document.getElementsByClassName("letter")[i].classList.add("correct")</span></p>
+        </div>
+        <div class="finding">
+          <span class="chip arch">Structural</span>
+          <p><strong>Line wrapping is derived from geometry.</strong> Bounding-rect comparisons decide when a line broke, and scrolling is a negative margin. Layout-dependent, resize-fragile, untestable.
+          <span class="src">TextArea.jsx — getOffset(nextLetter).top &gt; getOffset(currentLetter).top</span></p>
+        </div>
+        <div class="finding">
+          <span class="chip arch">Structural</span>
+          <p><strong>Words are stored as React elements in state.</strong> Model and view are the same object, so the word list can't be reasoned about, serialized, or verified.
+          <span class="src">TextArea.jsx — setWordList(elements)</span></p>
+        </div>
+        <div class="finding">
+          <span class="chip arch">Structural</span>
+          <p><strong>A numeric state machine</strong> — <code>-1, 0, 1, 3, 4, 5</code>, with no <code>2</code> — coordinated across roughly thirteen effects in two components.
+          <span class="src">Test.jsx — "weird things happen (its sent twice) ... i have no idea awhy"</span></p>
+        </div>
+      </div>
+
+      <h3>Correctness</h3>
+      <div class="findings">
+        <div class="finding">
+          <span class="chip bug">Bug</span>
+          <p><strong>Accuracy never forgives a correction.</strong> Backspace clears the CSS classes and steps the index back, but never pops the letter from the correct/incorrect arrays. Fix a typo and you are charged for the mistake <em>and</em> the fix, permanently.
+          <span class="src">TextArea.jsx — currentIncorrectLetterArray is append-only</span></p>
+        </div>
+        <div class="finding">
+          <span class="chip bug">Bug</span>
+          <p><strong>The headline metric isn't WPM.</strong> <code>(correct − incorrect) / 5 / min</code> double-penalizes every error, can go negative, and is comparable to no other site on earth.
+          <span class="src">Test.jsx — trueWPM</span></p>
+        </div>
+        <div class="finding">
+          <span class="chip bug">Bug</span>
+          <p><strong>The chart is sampled by a live interval,</strong> so results depend on when ticks landed. Nothing is reproducible, which is precisely why nothing can be verified.
+          <span class="src">Test.jsx — setChartData inside setInterval</span></p>
+        </div>
+        <div class="finding">
+          <span class="chip bug">Bug</span>
+          <p><strong>Timing uses wall-clock time.</strong> <code>Date.now()</code> is subject to NTP corrections and coarser resolution; keystroke timing needs a monotonic clock.
+          <span class="src">TextArea.jsx — const now = Date.now()</span></p>
+        </div>
+      </div>
+
+      <h3>Integrity &amp; product</h3>
+      <div class="findings">
+        <div class="finding">
+          <span class="chip integ">Integrity</span>
+          <p><strong>The leaderboard is forgeable in one command.</strong> The client computes its own results, sets its own <code>isValid</code> flag, reports the word list it claims it was given, and POSTs the whole object.
+          <span class="src">Test.jsx — sendTestToBackend(test)</span></p>
+        </div>
+        <div class="finding">
+          <span class="chip integ">Dead code</span>
+          <p><strong>646 lines of difficulty word lists with no route to them.</strong> Difficulty is hardcoded <code>"normal"</code> in the reset; easy and hard have never once been reachable.
+          <span class="src">wordLists.js / Test.jsx</span></p>
+        </div>
+        <div class="finding">
+          <span class="chip integ">Analysis</span>
+          <p><strong>The heatmap measures noise.</strong> Each key is coloured by its single slowest keystroke of the test — one hesitation defines a key forever. The signal is the median, not the max.
+          <span class="src">Heatmap.jsx — if (event.delay &gt; counts[key].delay)</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section data-n="02">
+      <h2>Repository architecture</h2>
+<pre><span class="c">bettertyping2/</span>
+├── apps/
+│   ├── web/                 <span class="c">React + TS + Vite SPA</span>
+│   └── api/                 <span class="c">Fastify + TS</span>
+├── packages/
+│   ├── <span class="k">engine/</span>              <span class="c">Typing engine. Pure TS. Zero deps. No DOM, no React.</span>
+│   ├── <span class="k">metrics/</span>             <span class="c">WPM / accuracy / consistency. Shared client + server.</span>
+│   ├── analytics/           <span class="c">Bigrams, error taxonomy, weakness ranking, drills.</span>
+│   ├── schema/              <span class="c">Drizzle schema + Zod contracts + shared types.</span>
+│   └── ui/                  <span class="c">Design tokens, primitives, motion system.</span>
+└── docs/</pre>
+
+      <div class="callout">
+        <p><strong>The linchpin.</strong> <code>engine</code> and <code>metrics</code> are imported by both the browser and the server. The code that scores your test in the UI is the same code that verifies it on submission.</p>
+        <p>An honest player and the server can never disagree. A dishonest one has to defeat a deterministic replay of their own keystrokes.</p>
+      </div>
+
+      <p>Tooling: pnpm workspaces · TypeScript strict · Vitest · Playwright · ESLint + Prettier · CI on every PR.</p>
+    </section>
+
+    <section data-n="03">
+      <h2>The typing engine</h2>
+      <p class="lead">A pure reducer. No DOM, no React, no timers. React subscribes to it; it never subscribes to React.</p>
+<pre><span class="k">type</span> Phase = 'idle' | 'ready' | 'running' | 'finished';
+
+<span class="k">interface</span> EngineState {
+  phase:   Phase;
+  words:   Word[];            <span class="c">// { target, typed[], extra[] }</span>
+  cursor:  { word: number; char: number };
+  events:  KeyEvent[];        <span class="c">// append-only, monotonic</span>
+  startedAt: number | null;
+}
+
+<span class="k">interface</span> KeyEvent {
+  t:      number;             <span class="c">// ms since first keystroke, float</span>
+  code:   string;             <span class="c">// physical key — layout independent</span>
+  key:    string;             <span class="c">// produced character</span>
+  hold?:  number;             <span class="c">// keyup − keydown</span>
+  target: string | null;      <span class="c">// expected char at the time</span>
+  kind:   'char' | 'backspace' | 'word-back' | 'space';
+}</pre>
+
+      <h3>Rules v1 gets right</h3>
+      <ul class="plain">
+        <li>Backspace genuinely reverts state. Correctness is <strong>derived from the event log</strong>, never accumulated in mutable arrays.</li>
+        <li>Two accuracy figures, both reported: <em class="term">firstAttemptAccuracy</em> (the industry-comparable number) and <em class="term">finalAccuracy</em>. Corrections count against the first — never against WPM.</li>
+        <li>Extra characters are supported. Typing past a word appends marked-extra glyphs instead of silently advancing.</li>
+        <li>Space skips the word and marks the remainder missed. Backspace crosses a word boundary only into words containing an error.</li>
+        <li>Timing comes from the event's own <code>timeStamp</code> where available, falling back to <code>performance.now()</code>. Never the wall clock.</li>
+        <li>Auto-repeat, paste, and IME composition are rejected at the boundary and never reach the engine.</li>
+      </ul>
+    </section>
+
+    <section data-n="04">
+      <h2>Metrics, defined once</h2>
+      <p class="lead">All derived from the event log after the fact, deterministically. Nothing sampled live — which is exactly what makes verification possible.</p>
+      <div class="wide scroll">
+        <table>
+          <thead><tr><th>Metric</th><th>Definition</th></tr></thead>
+          <tbody>
+            <tr><td>rawWpm</td><td>(all typed chars / 5) / minutes</td></tr>
+            <tr><td>wpm</td><td>(correct chars / 5) / minutes — net WPM, no error subtraction</td></tr>
+            <tr><td>accuracy</td><td>correct keystrokes / total keystrokes, first attempt</td></tr>
+            <tr><td>consistency</td><td>100 × (1 − σ/μ) across per-second WPM samples</td></tr>
+            <tr><td>charStats</td><td>correct / incorrect / extra / missed</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section data-n="05">
+      <h2>Integrity pipeline</h2>
+      <p class="lead"><strong>The server owns the text.</strong> The client asks for a test; the server issues an id and a seed and remembers both. Word lists are generated from that seed by shared code — so the client can no longer tell the server <em>what</em> it typed, only <em>how</em>.</p>
+      <ul class="plain">
+        <li><strong>Regenerate</strong> the word list from the stored seed.</li>
+        <li><strong>Replay</strong> the submitted event log through the same engine the browser ran.</li>
+        <li><strong>Recompute</strong> results and compare against the client's claim. Any mismatch is a rejection.</li>
+        <li><strong>Check the human-ness of the timing:</strong> monotonic timestamps; duration consistent with server-side issue-to-receipt; keydown/keyup hold times in human range; no sub-human intervals or sustained impossible bursts; a coefficient-of-variation floor, because people are never that regular and scripts always are; same-finger bigrams above physical minimums; per-user and per-IP rate limits.</li>
+        <li><strong>Band by score.</strong> Results above a high-water mark land in <em class="term">flagged</em> and pass a stricter statistical review before they appear publicly.</li>
+      </ul>
+      <p>Every test stores <code>verification: verified | flagged | rejected</code> with its reason. Leaderboards read <em class="term">verified</em> only. Guest tests never rank.</p>
+    </section>
+
+    <section data-n="06">
+      <h2>Analytics &amp; coaching</h2>
+      <p class="lead">Computed, not guessed. No model calls anywhere in this pillar.</p>
+      <ul class="plain">
+        <li><strong>Per key</strong> — median latency, error rate, sample count. The median, not v1's single worst keystroke.</li>
+        <li><strong>Per bigram</strong> — transition latency. This is the real signal: <code>th</code> is fast, <code>yp</code> is slow, and your slow set is personal.</li>
+        <li><strong>Error taxonomy</strong> — substitution (and whether the wrong key was physically adjacent), transposition, insertion, omission, capitalisation.</li>
+        <li><strong>Biomechanics</strong> — hand balance, finger load, same-finger bigram frequency, alternation ratio.</li>
+        <li><strong>Rhythm</strong> — warm-up curve, fatigue decay across a test, consistency over time.</li>
+        <li><strong>Weakness → drills</strong> — synthesized word lists weighted toward your worst bigrams, drawn from real dictionary words so drills read as English rather than gibberish.</li>
+      </ul>
+      <div class="callout">
+        <p>This is the pillar's entire justification: no other typing site keeps per-keystroke timing at this fidelity, so no other typing site can tell you this.</p>
+      </div>
+    </section>
+
+    <section data-n="07">
+      <h2>The Line</h2>
+      <p class="lead">One idea, expressed relentlessly. It is the caret, the WPM curve, the underline in the wordmark, the page transition, the progress bar, the rank marker. That repetition is what makes an identity read as designed rather than assembled.</p>
+      <div class="beats">
+        <div class="beat">
+          <h4>During</h4>
+          <p>A thin luminous path is drawn beneath the text in real time. Height is instantaneous WPM; hue shifts with accuracy. One animated path on a 2D canvas. Costs nothing, distracts no one.</p>
+        </div>
+        <div class="beat">
+          <h4>At the finish</h4>
+          <p>The text dissolves upward and the Line <em>detaches</em>, scales, and settles into the results chart. One continuous transition — no cut, no route change. The chart was never generated. You drew it.</p>
+        </div>
+        <div class="beat">
+          <h4>Ever after</h4>
+          <p>Every test you have taken is a Line. Your history is a wall of them, your best one lit. Racing your past self is two Lines drawn at once.</p>
+        </div>
+      </div>
+      <h3>Rules of engagement</h3>
+      <ul class="plain">
+        <li>Nothing animates behind text while a key can be pressed.</li>
+        <li>The test route ships no WebGL and no motion library. The Line is raw <code>requestAnimationFrame</code>.</li>
+        <li>WebGL is lazy-loaded on the landing, the results backdrop and the analytics view only, each with a static fallback.</li>
+        <li><code>prefers-reduced-motion</code> is a first-class path, not a disable switch. Every animation is interruptible; nothing blocks input.</li>
+      </ul>
+    </section>
+
+    <section data-n="08">
+      <h2>Design system</h2>
+      <p class="lead">The palette on this page is the proposal for the default variant. Cool ink ground, one signal accent, rose reserved strictly for error states.</p>
+      <div class="swatches">
+        <div class="sw" style="background:#0A0C11; color:#E7EAF3;"><span>ground</span><b>#0A0C11</b></div>
+        <div class="sw" style="background:#10141D; color:#E7EAF3;"><span>surface</span><b>#10141D</b></div>
+        <div class="sw" style="background:#232A3A; color:#E7EAF3;"><span>rule</span><b>#232A3A</b></div>
+        <div class="sw" style="background:#FFB525; color:#0A0C11;"><span>signal</span><b>#FFB525</b></div>
+        <div class="sw" style="background:#FF6183; color:#0A0C11;"><span>error</span><b>#FF6183</b></div>
+        <div class="sw" style="background:#E7EAF3; color:#0A0C11;"><span>text</span><b>#E7EAF3</b></div>
+      </div>
+      <p>Type pairs a machine against a human: <strong>Martian Mono</strong> for display and labels, a warm serif for reading, <strong>JetBrains Mono</strong> for data and test text. Six variants ship as hand-authored art directions rather than palette swaps — Void, Paper, Terminal, Dusk, Solar, Ink. A ⌘K command palette drives mode, length, modifiers, theme and navigation; the whole site is operable without a mouse.</p>
+      <h3>Performance budget</h3>
+      <div class="wide scroll">
+        <table>
+          <thead><tr><th>Target</th><th>Budget</th></tr></thead>
+          <tbody>
+            <tr><td>Keystroke → paint</td><td class="num">&lt; 16 ms, p99</td></tr>
+            <tr><td>Test route JS</td><td class="num">&lt; 100 KB gzip</td></tr>
+            <tr><td>Landing LCP</td><td class="num">&lt; 1.5 s</td></tr>
+            <tr><td>Dropped frames in a test</td><td class="num">zero</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section data-n="09">
+      <h2>Delivery — one PR per stage</h2>
+      <div class="wide scroll">
+        <table>
+          <thead><tr><th>Stage</th><th>Contents</th><th>Exit criteria</th></tr></thead>
+          <tbody>
+            <tr><td class="num">0</td><td>Monorepo, workspaces, strict TS, CI, design tokens</td><td>CI green on an empty app</td></tr>
+            <tr><td class="num">1</td><td>engine + metrics, headless, golden keystroke fixtures</td><td>Replay determinism proven by test</td></tr>
+            <tr><td class="num">2</td><td>Test screen and the Line, keyboard-first, no backend</td><td>Feels perfect offline; p99 latency measured</td></tr>
+            <tr><td class="num">3</td><td>Results transition, spectacle layer, WebGL, audio</td><td>The moment lands</td></tr>
+            <tr><td class="num">4</td><td>Fastify API, Drizzle schema, OAuth, verification</td><td>A forged submission is rejected in a test</td></tr>
+            <tr><td class="num">5</td><td>Leaderboards, profiles, history</td><td>Real data end to end</td></tr>
+            <tr><td class="num">6</td><td>Analytics engine, dashboard, heatmap done properly</td><td>Insights correct and legible</td></tr>
+            <tr><td class="num">7</td><td>Adaptive drills, XP / levels / streaks, daily challenge</td><td>Retention loop closed</td></tr>
+            <tr><td class="num">8</td><td>Six variants, settings, perf enforcement, a11y audit</td><td>Ship</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section data-n="10">
+      <h2>What I still need from you</h2>
+      <ol class="q">
+        <li>Typeface — a preference, or shall I bring a shortlist with specimens set in real test text?</li>
+        <li>Accent colour — is the signal amber above right, or do you want me to propose alternatives?</li>
+        <li>Name three sites whose <em>feel</em> you envy. This calibrates my taste against yours faster than any adjective can.</li>
+        <li>Do Google and Discord OAuth applications already exist, or do I document the setup?</li>
+        <li>Licensed typefaces in budget, or open-source only?</li>
+        <li>Domain — staying put, or moving?</li>
+      </ol>
+    </section>
+
+  </main>
+
+  <footer>
+    <span>bettertyping 2 — spec, draft for review</span>
+    <span>nothing here is built yet</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var canvas = document.getElementById('line');
+  var readout = document.getElementById('readout');
+  var ctx = canvas.getContext('2d');
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // A plausible WPM trace: warm-up, a stumble, recovery, a strong finish.
+  var pts = [];
+  var seed = 7;
+  function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+  for (var i = 0; i < 120; i++) {
+    var t = i / 119;
+    var base = 46 + 58 * (1 - Math.exp(-t * 4.2));
+    var stumble = Math.exp(-Math.pow((t - 0.42) / 0.06, 2)) * 34;
+    var wobble = Math.sin(t * 21) * 4.2 + (rnd() - 0.5) * 5.5;
+    pts.push(Math.max(18, base - stumble + wobble));
+  }
+  var maxV = 120, minV = 10;
+
+  var w = 0, h = 0, dpr = 1;
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = canvas.clientWidth; h = canvas.clientHeight;
+    canvas.width = Math.floor(w * dpr); canvas.height = Math.floor(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function tok(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+  function xAt(i) { return 24 + (i / (pts.length - 1)) * (w - 48); }
+  function yAt(v) { return h - 34 - ((v - minV) / (maxV - minV)) * (h - 74); }
+
+  function draw(progress) {
+    var accent = tok('--accent') || '#FFB525';
+    var rule = tok('--rule-soft') || '#1A2030';
+    ctx.clearRect(0, 0, w, h);
+
+    // baseline grid — three faint horizontals, the only chrome
+    ctx.strokeStyle = rule; ctx.lineWidth = 1;
+    for (var g = 1; g <= 3; g++) {
+      var gy = Math.round(yAt(minV + (maxV - minV) * (g / 4))) + 0.5;
+      ctx.beginPath(); ctx.moveTo(24, gy); ctx.lineTo(w - 24, gy); ctx.stroke();
+    }
+
+    var last = Math.max(1, Math.floor(progress * (pts.length - 1)));
+
+    // fill under the trace
+    var grad = ctx.createLinearGradient(0, yAt(maxV), 0, h);
+    grad.addColorStop(0, accent + '38');
+    grad.addColorStop(1, accent + '00');
+    ctx.beginPath();
+    ctx.moveTo(xAt(0), h - 34);
+    for (var i = 0; i <= last; i++) ctx.lineTo(xAt(i), yAt(pts[i]));
+    ctx.lineTo(xAt(last), h - 34);
+    ctx.closePath();
+    ctx.fillStyle = grad; ctx.fill();
+
+    // the line itself
+    ctx.beginPath();
+    for (var j = 0; j <= last; j++) {
+      var x = xAt(j), y = yAt(pts[j]);
+      if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 1.75;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // the head — a caret, because that is what it is
+    var hx = xAt(last), hy = yAt(pts[last]);
+    ctx.beginPath();
+    ctx.moveTo(hx, hy - 9); ctx.lineTo(hx, hy + 9);
+    ctx.lineWidth = 2; ctx.strokeStyle = accent; ctx.stroke();
+
+    if (readout) readout.textContent = Math.round(pts[last]) + ' wpm';
+  }
+
+  var start = null;
+  function frame(ts) {
+    if (start === null) start = ts;
+    var p = Math.min(1, (ts - start) / 4200);
+    draw(p);
+    if (p < 1) requestAnimationFrame(frame);
+  }
+
+  function run() {
+    resize();
+    if (reduced) { draw(1); return; }
+    start = null;
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize', function () { resize(); draw(1); });
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    if (mq.addEventListener) mq.addEventListener('change', function () { draw(1); });
+  }
+  run();
+})();
+</script>
