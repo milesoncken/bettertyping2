@@ -39,15 +39,15 @@ the frontend bundle.
 The API validates its environment at boot and refuses to start with a readable
 error rather than failing later on someone's first sign-in.
 
-| Variable | Example | Notes |
-|---|---|---|
-| `DATABASE_URL` | `postgres://user:pass@host:5432/bettertyping` | |
-| `WEB_ORIGIN` | `http://localhost:5173` | CORS origin and post-login redirect |
-| `GOOGLE_CLIENT_ID` | `…apps.googleusercontent.com` | |
-| `GOOGLE_CLIENT_SECRET` | | Never in the frontend |
-| `GOOGLE_REDIRECT_URI` | `http://localhost:8080/auth/google/callback` | Must match the console exactly |
-| `SESSION_SECRET` | 32+ random bytes | `openssl rand -base64 32` |
-| `PORT` | `8080` | Render sets this itself |
+| Variable               | Example                                       | Notes                               |
+| ---------------------- | --------------------------------------------- | ----------------------------------- |
+| `DATABASE_URL`         | `postgres://user:pass@host:5432/bettertyping` |                                     |
+| `WEB_ORIGIN`           | `http://localhost:5173`                       | CORS origin and post-login redirect |
+| `GOOGLE_CLIENT_ID`     | `…apps.googleusercontent.com`                 |                                     |
+| `GOOGLE_CLIENT_SECRET` |                                               | Never in the frontend               |
+| `GOOGLE_REDIRECT_URI`  | `http://localhost:8080/auth/google/callback`  | Must match the console exactly      |
+| `SESSION_SECRET`       | 32+ random bytes                              | `openssl rand -base64 32`           |
+| `PORT`                 | `8080`                                        | Render sets this itself             |
 
 The frontend takes one variable, `VITE_API_URL`. Leave it unset and the app runs
 entirely offline — you can type, but runs cannot rank.
@@ -106,13 +106,13 @@ Four values are deliberately left out of the blueprint, because they are either
 secrets or depend on hostnames that do not exist until the first deploy. Set them
 in the dashboard afterwards, then redeploy:
 
-| Service | Variable | Value |
-|---|---|---|
-| API | `GOOGLE_CLIENT_ID` | from the Google console |
-| API | `GOOGLE_CLIENT_SECRET` | from the Google console |
-| API | `GOOGLE_REDIRECT_URI` | `https://<api-host>/auth/google/callback` |
-| API | `WEB_ORIGIN` | `https://<web-host>` |
-| Web | `VITE_API_URL` | `https://<api-host>` |
+| Service | Variable               | Value                                     |
+| ------- | ---------------------- | ----------------------------------------- |
+| API     | `GOOGLE_CLIENT_ID`     | from the Google console                   |
+| API     | `GOOGLE_CLIENT_SECRET` | from the Google console                   |
+| API     | `GOOGLE_REDIRECT_URI`  | `https://<api-host>/auth/google/callback` |
+| API     | `WEB_ORIGIN`           | `https://<web-host>`                      |
+| Web     | `VITE_API_URL`         | `https://<api-host>`                      |
 
 Then add the deployed redirect URI to the Google console's authorised list, or
 sign-in will fail with a redirect mismatch.
@@ -122,12 +122,23 @@ rebuild rather than a restart.
 
 ### Two things that will bite
 
-**Cookies are `SameSite=Lax`.** The API and the web app should share a parent
-domain in production — `bettertyping.app` and `api.bettertyping.app`. On
-unrelated domains the session cookie is dropped by browsers that block
-third-party cookies, and sign-in will appear to succeed while `/me` keeps
-returning 401. (`localhost` and `127.0.0.1` count as unrelated, which is worth
-remembering when testing locally.)
+**The session cookie crosses sites, and that is fragile.** In production the
+cookie is `SameSite=None; Secure`; locally, where both sides are `localhost` and
+there is no HTTPS, it is `SameSite=Lax`. `None` is required the moment the API
+and the web app are different sites — which they are on Render's own hostnames,
+because `onrender.com` is a public suffix, so `bettertyping.onrender.com` and
+`bettertyping-api.onrender.com` are as unrelated to a browser as two strangers'
+domains. With `Lax` there, sign-in completes, the redirect arrives at
+`/?auth=ok`, and then `/me` returns 401 forever because the cookie is never
+attached to an XHR.
+
+`SameSite=None` makes it a third-party cookie, which browsers are steadily
+turning off: Safari blocks it outright, Firefox partitions it by top-level site.
+Chrome and Edge work today. **The durable fix is to stop being cross-site** —
+put both services under one registrable domain (`bettertyping.app` and
+`api.bettertyping.app`), at which point `Lax` is sufficient and none of the
+third-party cookie machinery applies. Treat the Render hostnames as fine for
+development and demos, not as where this ends up.
 
 **Render's free Postgres expires 30 days after creation** and is then deleted.
 Move to a paid instance before there is data worth keeping.
@@ -142,7 +153,7 @@ object so they can be argued about in one place.
 
 - **The server owns the text.** A client asks for a test; the server picks the
   seed, stores it, and only accepts keystrokes replayed against the text that
-  seed generates. A client cannot report *what* it typed, only *how*.
+  seed generates. A client cannot report _what_ it typed, only _how_.
 - **Every result is recomputed.** The submitted numbers are compared against the
   replay and a mismatch is a rejection. The stored result is always the server's.
 - **An issuance is single use**, claimed before verification so a replayed

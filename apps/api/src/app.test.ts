@@ -70,8 +70,8 @@ async function submit(testId: string, payload: unknown, cookie?: string) {
  * The identity is fixed by the harness's Google stub, so every call here is the
  * same person coming back — which is exactly what the repeat-sign-in test needs.
  */
-async function signIn() {
-  const started = await app.inject({ method: "GET", url: "/auth/google" });
+async function signInResponse(target: FastifyInstance = app) {
+  const started = await target.inject({ method: "GET", url: "/auth/google" });
   expect(started.statusCode).toBe(302);
 
   const location = new URL(started.headers.location as string);
@@ -83,7 +83,7 @@ async function signIn() {
   const stateCookie = cookieFrom(handshake, "bt_oauth_state");
   const verifierCookie = cookieFrom(handshake, "bt_oauth_verifier");
 
-  const callback = await app.inject({
+  const callback = await target.inject({
     method: "GET",
     url: `/auth/google/callback?code=abc&state=${state}`,
     headers: {
@@ -91,9 +91,22 @@ async function signIn() {
     },
   });
   expect(callback.statusCode).toBe(302);
+  return callback;
+}
+
+async function signIn(target: FastifyInstance = app) {
+  const callback = await signInResponse(target);
   const session = cookieFrom(callback.headers["set-cookie"], SESSION_COOKIE);
   expect(session).toBeTruthy();
   return session as string;
+}
+
+/** The whole `set-cookie` line for one cookie — attributes included. */
+function setCookieFor(headers: unknown, name: string): string {
+  const raw = Array.isArray(headers) ? headers : [headers];
+  const line = raw.map(String).find((entry) => entry.startsWith(`${name}=`));
+  expect(line).toBeTruthy();
+  return line as string;
 }
 
 beforeAll(async () => {
@@ -287,6 +300,35 @@ describe("sign-in", () => {
     const second = await signIn();
     const b = await app.inject({ method: "GET", url: "/me", headers: { cookie: `${SESSION_COOKIE}=${second}` } });
     expect(a.json().id).toBe(b.json().id);
+  });
+
+  it("sends the session cookie cross-site once deployed", async () => {
+    // Deployed, the web app and the API are separate hosts — separate *sites* on
+    // Render, where `onrender.com` is a public suffix. A `lax` cookie is set by
+    // the redirect and then withheld from the `/me` fetch that immediately
+    // follows, so the sign-in completes and the UI still says "sign in".
+    const production = await createTestApp(
+      fakeGoogle({ sub: "google-miles", email: "miles@example.com" }),
+      { NODE_ENV: "production" },
+    );
+    try {
+      const callback = await signInResponse(production.app);
+      const header = setCookieFor(callback.headers["set-cookie"], SESSION_COOKIE);
+      expect(header).toMatch(/SameSite=None/i);
+      expect(header).toMatch(/Secure/i);
+    } finally {
+      await production.close();
+    }
+  });
+
+  it("keeps the session cookie same-site when it is not secure", async () => {
+    // Locally both sides are localhost, which is same-site, and a browser drops
+    // `SameSite=None` outright unless it also carries `Secure` — which plain
+    // HTTP cannot. `lax` is the only thing that works here.
+    const callback = await signInResponse();
+    const header = setCookieFor(callback.headers["set-cookie"], SESSION_COOKIE);
+    expect(header).toMatch(/SameSite=Lax/i);
+    expect(header).not.toMatch(/Secure/i);
   });
 
   it("refuses a callback whose state does not match the handshake", async () => {

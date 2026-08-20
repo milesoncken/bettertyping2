@@ -42,13 +42,18 @@ export interface TestHarness {
   close: () => Promise<void>;
 }
 
-export async function createTestApp(fetchImpl?: typeof fetch): Promise<TestHarness> {
+export async function createTestApp(
+  fetchImpl?: typeof fetch,
+  /** Overrides for the cases where behaviour turns on configuration — `NODE_ENV`, say. */
+  envOverrides?: Partial<Env>,
+): Promise<TestHarness> {
   const client = new PGlite();
   const sql = await readFile(MIGRATION, "utf8");
   // drizzle-kit separates statements with a marker; PGlite runs them as a script.
   await client.exec(sql.replaceAll("--> statement-breakpoint", ""));
   const db = drizzle(client, { schema }) as unknown as Db;
-  const app = await buildApp({ db, env: TEST_ENV, ...(fetchImpl ? { fetchImpl } : {}) });
+  const env: Env = { ...TEST_ENV, ...envOverrides };
+  const app = await buildApp({ db, env, ...(fetchImpl ? { fetchImpl } : {}) });
 
   return {
     app,

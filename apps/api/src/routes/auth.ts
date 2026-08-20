@@ -47,6 +47,24 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthDeps): void {
     signed: true,
   };
 
+  // The session cookie is read by `fetch` from the web app, which sits on a
+  // different host — and on Render, a different *site*: `onrender.com` is a
+  // public suffix, so `bettertyping` and `bettertyping-api` are no more related
+  // than two unconnected domains as far as the browser is concerned. A `lax`
+  // cookie is happily set on the redirect back from Google and then silently
+  // withheld from every subsequent XHR, which reads exactly like a sign-in that
+  // did nothing at all. `none` is what actually crosses, and the browser only
+  // honours it alongside `secure`.
+  //
+  // Locally both sides are `localhost`, which is same-site, so `lax` remains
+  // correct there — and `none` would be rejected outright over plain HTTP.
+  const sessionCookie = {
+    httpOnly: true,
+    secure,
+    sameSite: secure ? ("none" as const) : ("lax" as const),
+    path: "/",
+  };
+
   app.get("/auth/google", async (_request, reply) => {
     const state = createState();
     const { verifier, challenge } = createPkce();
@@ -115,13 +133,7 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthDeps): void {
       return reply
         .clearCookie(STATE_COOKIE, { path: "/" })
         .clearCookie(VERIFIER_COOKIE, { path: "/" })
-        .setCookie(SESSION_COOKIE, token, {
-          httpOnly: true,
-          secure,
-          sameSite: "lax",
-          path: "/",
-          expires: expiresAt,
-        })
+        .setCookie(SESSION_COOKIE, token, { ...sessionCookie, expires: expiresAt })
         .redirect(`${env.WEB_ORIGIN}/?auth=ok`);
     },
   );
@@ -135,7 +147,7 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthDeps): void {
 
   app.post("/auth/logout", async (request, reply) => {
     await destroySession(db, request.cookies[SESSION_COOKIE]);
-    return reply.clearCookie(SESSION_COOKIE, { path: "/" }).send({ ok: true });
+    return reply.clearCookie(SESSION_COOKIE, sessionCookie).send({ ok: true });
   });
 }
 
