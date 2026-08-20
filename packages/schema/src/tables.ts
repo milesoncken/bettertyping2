@@ -5,6 +5,7 @@ import {
   integer,
   jsonb,
   pgTable,
+  primaryKey,
   real,
   smallint,
   text,
@@ -146,4 +147,79 @@ export const personalBests = pgTable(
     achievedAt: timestamp("achieved_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [uniqueIndex("pb_user_mode_length_key").on(table.userId, table.mode, table.length)],
+);
+
+/**
+ * ─── Analytics rollups ──────────────────────────────────────────────────────
+ *
+ * The keystroke logs on `tests` are the evidence, and scanning them to draw a
+ * dashboard would mean reading every run a player has ever done on every page
+ * load. These two tables are the same information, folded forward on write.
+ *
+ * Both are keyed on the **physical key** rather than the character, because a
+ * claim about fingers is only true if it is made about position. What each key
+ * prints is carried alongside as `legend`, observed from the player's own log —
+ * which means these tables record the player's layout as a side effect of
+ * recording their typing, and cannot disagree with it.
+ *
+ * Latency is stored as a **sum of per-run medians with a count of runs**, not as
+ * a sum of raw samples. Medians do not merge, and a mean over raw samples would
+ * hand a single 30-second pause the power to redefine a key. Each run's median
+ * has already discarded its own outliers, so their mean is robust and — the part
+ * that matters here — mergeable by addition, which is all an upsert can do.
+ */
+
+export const keyStats = pgTable(
+  "key_stats",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    code: text("code").notNull(),
+    /** The character this key produces on the player's board. */
+    legend: text("legend").notNull().default(""),
+
+    /** Times the key went down. */
+    struck: integer("struck").notNull().default(0),
+    /** Times it went down when a different key was wanted. */
+    intruded: integer("intruded").notNull().default(0),
+    /** Times the text asked for this key. */
+    wanted: integer("wanted").notNull().default(0),
+    /** Times it was asked for and something else arrived. */
+    missed: integer("missed").notNull().default(0),
+
+    flightSumMs: real("flight_sum_ms").notNull().default(0),
+    flightRuns: integer("flight_runs").notNull().default(0),
+    dwellSumMs: real("dwell_sum_ms").notNull().default(0),
+    dwellRuns: integer("dwell_runs").notNull().default(0),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.code] })],
+);
+
+export const bigramStats = pgTable(
+  "bigram_stats",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** `${fromCode}>${toCode}`. */
+    pair: text("pair").notNull(),
+    fromCode: text("from_code").notNull(),
+    toCode: text("to_code").notNull(),
+    /** The two characters, for a label a human can read. */
+    label: text("label").notNull().default(""),
+    /** same-key | same-finger | in-roll | out-roll | alternate | thumb. */
+    kind: text("kind").notNull(),
+
+    n: integer("n").notNull().default(0),
+    errors: integer("errors").notNull().default(0),
+    latencySumMs: real("latency_sum_ms").notNull().default(0),
+    latencyRuns: integer("latency_runs").notNull().default(0),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.pair] }),
+    // The dashboard wants a player's most-typed transitions, which is the only
+    // way this table is ever read.
+    index("bigram_stats_user_n_idx").on(table.userId, table.n),
+  ],
 );

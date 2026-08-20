@@ -1,0 +1,315 @@
+/*
+ * The observatory.
+ *
+ * Same instrument as every other surface: monochrome chrome, hairline rules,
+ * condensed micro-labels. The governing rule holds hardest here, because this
+ * is the page with the most to say — **colour is data and nothing else.** Every
+ * hue on this page comes out of the spectral ramp and encodes a measurement.
+ * Not one border, heading, chip or panel is tinted.
+ */
+
+.analysis {
+  gap: 2.2rem;
+}
+
+/* ── Headline figures ── */
+.headline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  margin: 0;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+
+.headline-figure {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.9rem 1rem;
+  background: var(--ground);
+}
+
+.headline-figure dd {
+  margin: 0;
+  font-family: var(--f-data);
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--text);
+}
+
+.headline-note {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  line-height: 1.35;
+}
+
+.thin-note {
+  max-width: 62ch;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.chips {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.run-picker {
+  padding-bottom: 0.2rem;
+}
+
+/* ── The Ribbon ── */
+.ribbon {
+  margin: 0;
+  width: 100%;
+}
+
+.ribbon-host {
+  width: 100%;
+  border: 1px solid var(--rule);
+  background: var(--panel);
+}
+
+.ribbon-canvas {
+  display: block;
+  /* The pan gesture is a drag, and a text cursor would lie about that. */
+  cursor: grab;
+  touch-action: none;
+}
+
+.ribbon-canvas:active {
+  cursor: grabbing;
+}
+
+.ribbon-foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding-top: 0.55rem;
+}
+
+.ribbon-readout {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  font-family: var(--f-data);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  min-height: 1.2em;
+}
+
+.ribbon-readout b {
+  font-size: 0.95rem;
+  color: var(--text);
+  font-weight: 500;
+  min-width: 2ch;
+}
+
+.ribbon-readout em {
+  font-style: normal;
+  color: var(--text-mid);
+}
+
+.ribbon-readout em[data-bad] {
+  color: var(--data-slow);
+}
+
+.ribbon-reset {
+  margin-left: 0.6rem;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--rule-lit);
+  color: var(--text-mid);
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ribbon-reset:hover {
+  color: var(--text);
+}
+
+/* ── The Atlas ── */
+.atlas {
+  width: 100%;
+}
+
+.atlas-svg {
+  width: 100%;
+  height: auto;
+  max-width: 780px;
+  display: block;
+}
+
+.atlas-key {
+  cursor: pointer;
+}
+
+.atlas-cap {
+  fill: var(--panel);
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+
+/* A key with too little behind it is drawn as unmeasured, not as neutral —
+   there is a difference between "average" and "we do not know". */
+.atlas-key:not([data-measured]) .atlas-cap {
+  fill: transparent;
+  stroke-dasharray: 2 3;
+}
+
+.atlas-key[data-selected] .atlas-cap {
+  stroke: var(--text);
+  stroke-width: 1.5;
+}
+
+.atlas-key:hover .atlas-cap {
+  stroke: var(--rule-lit);
+}
+
+.atlas-legend {
+  fill: var(--text);
+  font-family: var(--f-data);
+  font-size: 12px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  mix-blend-mode: difference;
+}
+
+.atlas-key:not([data-measured]) .atlas-legend {
+  fill: var(--text-dim);
+  mix-blend-mode: normal;
+}
+
+.atlas-samples {
+  fill: var(--text);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.atlas-note {
+  padding-top: 0.7rem;
+  max-width: 68ch;
+  line-height: 1.6;
+}
+
+/* ── The Rose ── */
+.rose-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 460px) minmax(280px, 1fr);
+  gap: 2rem;
+  align-items: start;
+  width: 100%;
+}
+
+@media (max-width: 860px) {
+  .rose-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rose-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.rose-ring {
+  fill: none;
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+
+.rose-arcs path {
+  transition: stroke-opacity 120ms linear;
+  cursor: crosshair;
+}
+
+.rose-node {
+  font-family: var(--f-data);
+  font-size: 13px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  fill: var(--text-dim);
+}
+
+/* The two hands are told apart by weight, never by colour. */
+.rose-node[data-hand="right"] {
+  fill: var(--text-mid);
+}
+
+.rose-node[data-lit] {
+  fill: var(--text);
+  font-weight: 600;
+}
+
+.rose-readout {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-family: var(--f-data);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  padding-top: 0.6rem;
+  min-height: 1.2em;
+  line-height: 1.6;
+}
+
+.rose-readout b {
+  font-size: 1rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.rose-readout em {
+  font-style: normal;
+  color: var(--text-mid);
+}
+
+.rose-readout em[data-bad] {
+  color: var(--data-slow);
+}
+
+.worst {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.worst-table {
+  font-size: 0.75rem;
+}
+
+.worst-table td,
+.worst-table th {
+  padding: 0.4rem 0.55rem;
+}
+
+.worst-pair {
+  font-family: var(--f-text);
+  font-size: 0.95rem;
+  color: var(--text);
+  white-space: pre;
+}
+
+/* Motion is a preference, not a feature. */
+@media (prefers-reduced-motion: reduce) {
+  .rose-arcs path {
+    transition: none;
+  }
+}

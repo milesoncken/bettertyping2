@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@bettertyping/analytics": "workspace:*",
     "@bettertyping/engine": "workspace:*",
     "@bettertyping/metrics": "workspace:*",
     "@bettertyping/schema": "workspace:*",

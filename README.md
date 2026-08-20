@@ -50,6 +50,7 @@ application.
 |---|---|
 | `packages/engine` | Pure TypeScript typing engine. No DOM, no React, no timers. |
 | `packages/metrics` | Canonical WPM / accuracy / consistency. Imported by client *and* server. |
+| `packages/analytics` | Keyboard geometry, per-key and per-bigram statistics, error taxonomy, rollups. |
 | `packages/verify` | Submission verification: replay, then decide whether hands could have done it. |
 | `packages/schema` | Drizzle tables, committed migrations, and the Zod wire contracts. |
 | `apps/web` | React 19 + Vite. The test screen, the Line, and the board screens. |
@@ -64,6 +65,8 @@ application.
 | `/me` | Your profile, plus your full history including runs that did not count. |
 | `/u/:username` | Anyone's profile. Verified runs only. |
 | `/run/:id` | One run, its chart recomputed on the server from the keystrokes it was verified against. |
+| `/analysis` | The observatory — the Rhythm Ribbon, the Atlas and the Transition Rose. |
+| `/analysis/:username` | Anyone's, over their verified runs. |
 
 Backend setup, including creating the Google OAuth application:
 [`docs/BACKEND.md`](docs/BACKEND.md).

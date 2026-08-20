@@ -35,11 +35,9 @@ export function TestScreen(): React.JSX.Element {
   const profileRef = useRef<Profile>(profile);
   profileRef.current = profile;
 
-  const { state, stateRef, originRef, testIdRef, restart, setConfig } = useTypingTest(
-    INITIAL,
-    profileRef,
-  );
-  const submission = useSubmission(state, testIdRef);
+  const { state, stateRef, originRef, testIdRef, dwellRef, restart, setConfig } =
+    useTypingTest(INITIAL, profileRef);
+  const submission = useSubmission(state, testIdRef, dwellRef);
 
   const pointsRef = useRef<TracePoint[]>([]);
   const hostRef = useRef<HTMLDivElement>(null);

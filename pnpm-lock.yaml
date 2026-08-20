@@ -35,6 +35,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@bettertyping/analytics':
+        specifier: workspace:*
+        version: link:../../packages/analytics
       '@bettertyping/engine':
         specifier: workspace:*
         version: link:../../packages/engine
@@ -78,6 +81,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@bettertyping/analytics':
+        specifier: workspace:*
+        version: link:../../packages/analytics
       '@bettertyping/engine':
         specifier: workspace:*
         version: link:../../packages/engine
@@ -107,6 +113,15 @@ importers:
         specifier: ^6.0.5
         version: 6.4.3(@types/node@22.20.1)
 
+  packages/analytics:
+    dependencies:
+      '@bettertyping/engine':
+        specifier: workspace:*
+        version: link:../engine
+      '@bettertyping/metrics':
+        specifier: workspace:*
+        version: link:../metrics
+
   packages/engine: {}
 
   packages/metrics:
@@ -117,6 +132,9 @@ importers:
 
   packages/schema:
     dependencies:
+      '@bettertyping/analytics':
+        specifier: workspace:*
+        version: link:../analytics
       '@bettertyping/engine':
         specifier: workspace:*
         version: link:../engine

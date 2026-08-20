@@ -213,16 +213,22 @@ export function finish(prev: EngineState, t: number): EngineState {
 export function replay(config: TestConfig, events: readonly KeyEvent[]): EngineState {
   let state = createState(config);
   for (const event of events) {
+    // `hold` is carried through rather than dropped. It is not used by the
+    // reducer — a key's dwell cannot change what it typed — but a replay claims
+    // to rebuild the run from its keystrokes, and a replay that quietly loses a
+    // recorded field makes that claim false for everything downstream of it.
+    const hold = event.hold !== undefined ? { hold: event.hold } : {};
     if (event.kind === "word-back" && event.key === "Backspace") {
       state = applyKey(state, {
         key: event.key,
         code: event.code,
         t: event.t,
         ctrl: true,
+        ...hold,
       });
       continue;
     }
-    state = applyKey(state, { key: event.key, code: event.code, t: event.t });
+    state = applyKey(state, { key: event.key, code: event.code, t: event.t, ...hold });
   }
   const last = events.length > 0 ? events[events.length - 1] : undefined;
   if (state.phase !== "finished" && last) state = finish(state, last.t);

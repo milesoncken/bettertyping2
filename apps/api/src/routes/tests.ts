@@ -8,6 +8,9 @@ import {
 } from "@bettertyping/schema";
 import type { KeyEvent, TestConfig } from "@bettertyping/engine";
 import { verifySubmission } from "@bettertyping/verify";
+import { analyseRun } from "@bettertyping/analytics";
+import { replay } from "@bettertyping/engine";
+import { writeRollups } from "./analysis.js";
 import { randomBytes } from "node:crypto";
 import { schema } from "../db.js";
 import type { Db } from "../db.js";
@@ -191,6 +194,22 @@ export function registerTestRoutes(app: FastifyInstance, db: Db): void {
         chars: outcome.results.chars,
       },
     };
+
+    /**
+     * Fold the run into the player's analytics.
+     *
+     * Verified runs only, and only for an account — the same population every
+     * other aggregate is taken over. A guest has nobody to attribute a key to,
+     * and a rejected run is not evidence of how anyone's hands work.
+     *
+     * The replay is a second pass over a log the verifier already replayed. It
+     * costs microseconds on a few hundred events, and the alternative is
+     * threading engine state out through the verifier's result purely to save
+     * it — which would make the verifier's job less clear to save nothing.
+     */
+    if (session && outcome.verification === "verified") {
+      await writeRollups(db, session.id, analyseRun(replay(config, events)));
+    }
 
     // Only a verified run held by an account can move a personal best.
     if (session && testRow && outcome.verification === "verified") {
