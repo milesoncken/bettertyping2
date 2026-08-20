@@ -1,0 +1,29 @@
+{
+  "name": "@bettertyping/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "node dist/index.js",
+    "migrate": "node dist/migrate.js",
+    "dev:memory": "node build.mjs && node dist/dev-memory.js"
+  },
+  "dependencies": {
+    "@bettertyping/engine": "workspace:*",
+    "@bettertyping/metrics": "workspace:*",
+    "@bettertyping/schema": "workspace:*",
+    "@bettertyping/verify": "workspace:*",
+    "@fastify/cookie": "^11.0.1",
+    "@fastify/cors": "^10.0.1",
+    "drizzle-orm": "^0.38.2",
+    "fastify": "^5.2.0",
+    "pg": "^8.13.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.2.15",
+    "@types/pg": "^8.11.10",
+    "esbuild": "^0.24.2"
+  }
+}

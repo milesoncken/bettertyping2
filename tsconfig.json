@@ -2,13 +2,16 @@
   "files": [],
   "references": [
     {
-      "path": "./tsconfig.app.json"
+      "path": "./packages/engine"
+    },
+    {
+      "path": "./packages/metrics"
+    },
+    {
+      "path": "./packages/schema"
+    },
+    {
+      "path": "./packages/verify"
     }
-  ],
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  }
+  ]
 }

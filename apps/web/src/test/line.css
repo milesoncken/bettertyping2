@@ -1,0 +1,23 @@
+/* The trace overlays the whole content area and plots into a rectangle that
+   animates between anchors. Being an overlay is what lets it fly from beneath
+   the text into the chart without any element resizing. */
+.line-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.line-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.line-ramp {
+  width: 64px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--data-slow), var(--data-mid), var(--data-fast));
+}

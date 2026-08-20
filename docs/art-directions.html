@@ -1,0 +1,592 @@
+<title>bettertyping Art Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,200;9..144,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@700;800&display=swap">
+
+<style>
+  /* ═══ Gallery chrome — neutral on purpose, so the plates carry the colour ═══ */
+  :root {
+    --g-bg:     #EDEEF0;
+    --g-panel:  #FFFFFF;
+    --g-rule:   #CFD2D8;
+    --g-text:   #14161A;
+    --g-dim:    #4E545F;
+    --g-mute:   #838A96;
+    --g-mark:   #14161A;
+    --g-chrome: "IBM Plex Mono", ui-monospace, monospace;
+    --g-disp:   "Bricolage Grotesque", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --g-bg:    #0E1013;
+      --g-panel: #16191E;
+      --g-rule:  #2A2F37;
+      --g-text:  #EDEFF3;
+      --g-dim:   #A9B0BC;
+      --g-mute:  #6E7784;
+      --g-mark:  #EDEFF3;
+    }
+  }
+  :root[data-theme="dark"] {
+    --g-bg:    #0E1013;
+    --g-panel: #16191E;
+    --g-rule:  #2A2F37;
+    --g-text:  #EDEFF3;
+    --g-dim:   #A9B0BC;
+    --g-mute:  #6E7784;
+    --g-mark:  #EDEFF3;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--g-bg);
+    color: var(--g-text);
+    font-family: var(--g-chrome);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 1.25rem 7rem; }
+
+  /* ── Masthead ── */
+  .masthead { padding: 4.5rem 0 2.5rem; border-bottom: 1px solid var(--g-rule); }
+  .kicker {
+    font-size: .68rem; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--g-mute); margin: 0 0 1.4rem;
+  }
+  .masthead h1 {
+    font-family: var(--g-disp); font-weight: 800;
+    font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.02;
+    letter-spacing: -.025em; margin: 0 0 1.4rem; max-width: 22ch;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1rem; line-height: 1.7; color: var(--g-dim);
+    max-width: 64ch; margin: 0 0 1rem;
+  }
+  .standfirst strong { color: var(--g-text); font-weight: 500; }
+
+  /* ── Plates ── */
+  .plate { padding: 4rem 0; border-bottom: 1px solid var(--g-rule); }
+
+  .plate-head { display: grid; gap: .75rem; margin-bottom: 1.75rem; }
+  @media (min-width: 860px) {
+    .plate-head { grid-template-columns: 4.5rem 1fr; gap: 0 2rem; align-items: baseline; }
+  }
+  .idx {
+    font-family: var(--g-disp); font-weight: 800; font-size: 2.4rem;
+    line-height: 1; color: var(--g-mark); letter-spacing: -.04em;
+  }
+  .plate-head h2 {
+    font-family: var(--g-disp); font-weight: 800; font-size: clamp(1.5rem, 3.4vw, 2.1rem);
+    letter-spacing: -.02em; margin: 0 0 .5rem; line-height: 1.1;
+  }
+  .thesis { margin: 0; color: var(--g-dim); font-size: .95rem; line-height: 1.65; max-width: 62ch; }
+  .thesis strong { color: var(--g-text); font-weight: 500; }
+
+  /* the specimen frame */
+  .stage {
+    position: relative; height: 420px; overflow: hidden;
+    border: 1px solid var(--g-rule);
+  }
+  @media (max-width: 700px) { .stage { height: 340px; } }
+
+  .plate-meta {
+    display: grid; gap: 1.5rem; margin-top: 1.5rem;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 860px) { .plate-meta { grid-template-columns: 1.15fr 1fr 1fr; gap: 2.5rem; } }
+  .meta-block h3 {
+    font-size: .62rem; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--g-mute); margin: 0 0 .6rem; font-weight: 500;
+  }
+  .meta-block p { margin: 0; font-size: .84rem; line-height: 1.65; color: var(--g-dim); }
+  .meta-block p + p { margin-top: .5rem; }
+  .meta-block b { color: var(--g-text); font-weight: 500; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: .3rem; }
+  .chip {
+    width: 2.6rem; height: 2.6rem; border: 1px solid var(--g-rule);
+    display: flex; align-items: flex-end; justify-content: center;
+    font-size: .5rem; padding-bottom: .18rem; letter-spacing: .04em;
+  }
+
+  /* ═══ A — INSTRUMENT ═══════════════════════════════════════ */
+  .pA .stage { background: #F0F0EA; }
+  .a-grid {
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(to right, rgba(30,90,110,.13) 0 1px, transparent 1px 100%),
+      repeating-linear-gradient(to bottom, rgba(30,90,110,.13) 0 1px, transparent 1px 100%);
+    background-size: 22px 22px, 22px 22px;
+  }
+  .a-grid::after {
+    content: ""; position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(to right, rgba(30,90,110,.22) 0 1px, transparent 1px 100%),
+      repeating-linear-gradient(to bottom, rgba(30,90,110,.22) 0 1px, transparent 1px 100%);
+    background-size: 110px 110px, 110px 110px;
+  }
+  .a-inner { position: absolute; inset: 0; padding: 1.6rem 2rem; display: flex; flex-direction: column; }
+  .a-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .a-id {
+    font-family: "IBM Plex Sans Condensed", sans-serif; font-weight: 700;
+    font-size: .72rem; letter-spacing: .22em; text-transform: uppercase; color: #101418;
+  }
+  .a-id em { font-style: normal; color: #D8341F; }
+  .a-readouts { display: flex; gap: 1.6rem; }
+  .a-ro { text-align: right; font-family: "IBM Plex Mono", monospace; }
+  .a-ro b {
+    display: block; font-size: 1.55rem; font-weight: 600; line-height: 1;
+    color: #101418; font-variant-numeric: tabular-nums;
+  }
+  .a-ro span { font-size: .55rem; letter-spacing: .16em; text-transform: uppercase; color: #5A6B72; }
+  .a-ro.hot b { color: #D8341F; }
+
+  .a-text {
+    font-family: "IBM Plex Mono", monospace; font-size: clamp(.95rem, 2.5vw, 1.42rem);
+    line-height: 2.1; margin-top: 1.9rem; letter-spacing: .01em; max-width: 46ch;
+  }
+  .a-text .ok   { color: #101418; }
+  .a-text .bad  { color: #D8341F; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+  .a-text .todo { color: #9AA6AB; }
+  .a-caret {
+    display: inline-block; width: 2px; height: 1.25em; background: #D8341F;
+    vertical-align: -.25em; margin: 0 -1px;
+  }
+  .a-trace { position: absolute; left: 0; right: 0; bottom: 0; height: 118px; width: 100%; }
+  .a-foot {
+    position: absolute; left: 2rem; bottom: .7rem; right: 2rem;
+    display: flex; justify-content: space-between;
+    font-family: "IBM Plex Mono", monospace; font-size: .55rem;
+    letter-spacing: .16em; text-transform: uppercase; color: #5A6B72;
+  }
+
+  /* ═══ B — KINETIC FIELD ════════════════════════════════════ */
+  .pB .stage { background: #1B2BE8; }
+  .b-rule { position: absolute; background: #0A0A0A; }
+  .b-inner { position: absolute; inset: 0; padding: 1.5rem 1.9rem; }
+  .b-word {
+    position: absolute; right: -.6rem; top: 6%;
+    font-family: "Syne", sans-serif; font-weight: 800;
+    font-size: clamp(4.5rem, 15vw, 9.5rem); line-height: .8;
+    color: #F2F0E9; letter-spacing: -.05em;
+    writing-mode: vertical-rl; opacity: .16;
+  }
+  .b-tag {
+    font-family: "Syne", sans-serif; font-weight: 800; font-size: .7rem;
+    letter-spacing: .2em; text-transform: uppercase; color: #F2F0E9;
+  }
+  .b-num {
+    position: absolute; left: 1.9rem; bottom: 1.2rem;
+    font-family: "Syne", sans-serif; font-weight: 800;
+    font-size: clamp(3.6rem, 11vw, 6.6rem); line-height: .82;
+    color: #E8FF52; letter-spacing: -.05em; font-variant-numeric: tabular-nums;
+  }
+  .b-num small {
+    display: block; font-size: .7rem; letter-spacing: .2em;
+    text-transform: uppercase; color: #F2F0E9; margin-top: .35rem; font-weight: 700;
+  }
+  .b-text {
+    position: absolute; left: 1.9rem; right: 1.9rem; top: 36%;
+    font-family: "JetBrains Mono", monospace; font-weight: 500;
+    font-size: clamp(1rem, 3vw, 1.85rem); line-height: 1.5; max-width: 26ch;
+  }
+  .b-text .ok   { color: #F2F0E9; }
+  .b-text .bad  { color: #0A0A0A; background: #E8FF52; }
+  .b-text .todo { color: rgba(242,240,233,.42); }
+  .b-caret { display: inline-block; width: .55ch; height: 1.15em; background: #E8FF52; vertical-align: -.22em; }
+  .b-trace { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  /* ═══ C — CHAMBER ══════════════════════════════════════════ */
+  .pC .stage { background: radial-gradient(120% 90% at 50% 118%, #1D3A44 0%, #0C1519 58%, #070C0F 100%); }
+  .c-fog {
+    position: absolute; left: 50%; bottom: -35%; width: 120%; height: 90%;
+    transform: translateX(-50%);
+    background: radial-gradient(closest-side, rgba(126,226,208,.16), rgba(126,226,208,0) 72%);
+  }
+  .c-inner {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2.4rem; padding: 2rem;
+  }
+  .c-chips { display: flex; gap: .45rem; }
+  .c-chip {
+    font-family: "JetBrains Mono", monospace; font-size: .58rem;
+    letter-spacing: .16em; text-transform: uppercase;
+    padding: .34rem .7rem; border-radius: 999px;
+    border: 1px solid rgba(180,214,210,.24); color: #9FC4C0;
+  }
+  .c-chip.on { border-color: rgba(126,226,208,.6); color: #0C1519; background: #7EE2D0; }
+  .c-text {
+    font-family: "JetBrains Mono", monospace; font-weight: 400;
+    font-size: clamp(1rem, 2.7vw, 1.6rem); line-height: 1.9;
+    text-align: center; max-width: 30ch;
+  }
+  .c-text .ok   { color: #EAF6F3; }
+  .c-text .bad  { color: #FF7C86; }
+  .c-text .todo { color: #587076; }
+  .c-text .far  { color: #3B4F55; filter: blur(1.6px); }
+  .c-text .far2 { color: #2E4046; filter: blur(3.4px); }
+  .c-caret {
+    display: inline-block; width: 2px; height: 1.2em; vertical-align: -.24em;
+    background: #7EE2D0; box-shadow: 0 0 14px 2px rgba(126,226,208,.75);
+  }
+  .c-stat {
+    font-family: "Fraunces", Georgia, serif; font-weight: 200;
+    font-size: clamp(2.4rem, 7vw, 4rem); color: #EAF6F3; line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .c-stat span { font-family: "JetBrains Mono", monospace; font-size: .55rem; letter-spacing: .22em; text-transform: uppercase; color: #7C9A9C; display: block; margin-top: .7rem; }
+  .c-trace { position: absolute; left: 0; right: 0; bottom: 0; height: 130px; width: 100%; }
+
+  /* ═══ D — OVERPRINT ════════════════════════════════════════ */
+  .pD .stage { background: #F5F2E9; }
+  .d-half {
+    position: absolute; inset: 0; opacity: .5;
+    background-image: radial-gradient(circle at center, #1747C9 1.1px, transparent 1.2px);
+    background-size: 7px 7px;
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.85), transparent 62%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,.85), transparent 62%);
+  }
+  .d-block {
+    position: absolute; right: 6%; top: 12%; width: 30%; height: 52%;
+    background: #FF3D9A; mix-blend-mode: multiply; transform: rotate(-2.4deg);
+  }
+  .d-block::after {
+    content: ""; position: absolute; inset: 8% -6% -10% 12%;
+    background: #1747C9; mix-blend-mode: multiply; transform: rotate(4deg);
+  }
+  .d-inner { position: absolute; inset: 0; padding: 1.7rem 2rem; }
+  .d-stamp {
+    font-family: "Syne", sans-serif; font-weight: 800; font-size: .68rem;
+    letter-spacing: .2em; text-transform: uppercase; color: #1747C9;
+    border: 1.5px solid #1747C9; display: inline-block; padding: .3rem .6rem;
+    transform: rotate(-1.6deg);
+  }
+  .d-text {
+    font-family: "DM Mono", monospace; font-size: clamp(1rem, 2.8vw, 1.6rem);
+    line-height: 1.95; margin-top: 2.1rem; max-width: 28ch;
+  }
+  .d-text .ok   { color: #12142A; }
+  .d-text .bad  { color: #FF3D9A; }
+  .d-text .todo { color: #A6A399; }
+  .d-caret { display: inline-block; width: .5ch; height: 1.15em; background: #FF3D9A; vertical-align: -.22em; mix-blend-mode: multiply; }
+  .d-num {
+    position: absolute; right: 2rem; bottom: 1.4rem; text-align: right;
+    font-family: "Syne", sans-serif; font-weight: 800; line-height: .85;
+    font-size: clamp(2.6rem, 8vw, 4.6rem); color: #1747C9; font-variant-numeric: tabular-nums;
+    transform: rotate(-1.2deg);
+  }
+  .d-num small { display: block; font-size: .58rem; letter-spacing: .2em; text-transform: uppercase; color: #12142A; margin-top: .5rem; }
+  .d-trace { position: absolute; left: 0; right: 0; bottom: 0; height: 120px; width: 100%; mix-blend-mode: multiply; }
+
+  /* ── Closing ── */
+  .close { padding: 3.5rem 0 0; }
+  .close h2 { font-family: var(--g-disp); font-weight: 800; font-size: 1.6rem; letter-spacing: -.02em; margin: 0 0 1rem; }
+  .close p { max-width: 64ch; color: var(--g-dim); font-size: .95rem; }
+  .close p strong { color: var(--g-text); font-weight: 500; }
+  .rec {
+    border-left: 2px solid var(--g-mark); padding: .2rem 0 .2rem 1.25rem;
+    margin: 1.75rem 0; max-width: 64ch;
+  }
+  .rec p { margin: 0; color: var(--g-text); }
+  .rec p + p { margin-top: .6rem; color: var(--g-dim); }
+
+  a { color: var(--g-text); text-underline-offset: 3px; }
+  a:focus-visible { outline: 2px solid var(--g-mark); outline-offset: 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="kicker">bettertyping 2 · art direction · four explorations</p>
+    <h1>The last one was the genre default wearing a new coat.</h1>
+    <p class="standfirst">
+      Dark ground, one warm accent, monospace everywhere — that is the typing-site house style, and I handed it back to you as an identity. Fair hit.
+    </p>
+    <p class="standfirst">
+      Here are four directions that <strong>could not be mistaken for anything else in the category</strong>. Each is a real screen, not a mood board: the same moment of the same test, rendered four ways. Read them as whole worlds — palette, type, layout and the behaviour of the Line all move together.
+    </p>
+  </header>
+
+  <!-- ══ A ══ -->
+  <article class="plate pA">
+    <div class="plate-head">
+      <span class="idx">A</span>
+      <div>
+        <h2>Instrument</h2>
+        <p class="thesis">
+          A precision measuring device, on paper. Plotter grid, calibration ticks, a pen laying ink as you type. <strong>Light, not dark</strong> — which alone puts daylight between us and every competitor. And it is the only direction whose visual language <em>is</em> the product's actual claim: this machine measures you to the millisecond.
+        </p>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="a-grid"></div>
+      <div class="a-inner">
+        <div class="a-top">
+          <div class="a-id">bettertyping <em>/</em> run 0416 <em>/</em> words 25</div>
+          <div class="a-readouts">
+            <div class="a-ro"><b>91.4</b><span>wpm</span></div>
+            <div class="a-ro"><b>97.2</b><span>acc %</span></div>
+            <div class="a-ro hot"><b>0.148</b><span>mean s</span></div>
+          </div>
+        </div>
+        <div class="a-text">
+          <span class="ok">the current of a sentence</span> <span class="bad">carr</span><span class="a-caret"></span><span class="todo">ies more than its words the</span>
+        </div>
+      </div>
+      <svg class="a-trace" viewBox="0 0 1000 118" preserveAspectRatio="none" aria-hidden="true">
+        <path class="fill" d="" fill="rgba(216,52,31,.10)"></path>
+        <path class="line" d="" fill="none" stroke="#D8341F" stroke-width="1.6" vector-effect="non-scaling-stroke"></path>
+      </svg>
+      <div class="a-foot"><span>cal. 0.1 s · full scale 140 wpm</span><span>specimen a</span></div>
+    </div>
+    <div class="plate-meta">
+      <div class="meta-block">
+        <h3>Palette</h3>
+        <div class="chips">
+          <div class="chip" style="background:#F0F0EA; color:#101418;">paper</div>
+          <div class="chip" style="background:#101418; color:#F0F0EA;">ink</div>
+          <div class="chip" style="background:#D8341F; color:#F0F0EA;">pen</div>
+          <div class="chip" style="background:#C2D6DA; color:#101418;">grid</div>
+          <div class="chip" style="background:#5A6B72; color:#F0F0EA;">label</div>
+        </div>
+      </div>
+      <div class="meta-block">
+        <h3>Type</h3>
+        <p><b>IBM Plex Sans Condensed</b> for labels and identifiers.</p>
+        <p><b>IBM Plex Mono</b> for test text and every readout.</p>
+      </div>
+      <div class="meta-block">
+        <h3>The Line here</h3>
+        <p>A plotter pen. It has a visible head, it draws with slight ink weight variation, and it never lifts. On finish the paper feeds upward and the trace becomes the chart.</p>
+      </div>
+    </div>
+  </article>
+
+  <!-- ══ B ══ -->
+  <article class="plate pB">
+    <div class="plate-head">
+      <span class="idx">B</span>
+      <div>
+        <h2>Kinetic Field</h2>
+        <p class="thesis">
+          Swiss poster energy at full saturation. A single overwhelming colour field, type set enormous and hard to the grid, one acid highlight doing all the signalling. <strong>The loudest option</strong> — it wins attention in a scroll-past and photographs beautifully, which matters when judges see the screenshot before the site.
+        </p>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="b-inner">
+        <div class="b-tag">bettertyping — 25 words — punctuation on</div>
+        <div class="b-word">TYPE</div>
+        <div class="b-text">
+          <span class="ok">the current of a</span> <span class="bad">sentance</span><span class="b-caret"></span> <span class="todo">carries more than</span>
+        </div>
+        <div class="b-num">91<small>words / minute</small></div>
+      </div>
+      <svg class="b-trace" viewBox="0 0 1000 420" preserveAspectRatio="none" aria-hidden="true">
+        <path class="line" d="" fill="none" stroke="#E8FF52" stroke-width="3" vector-effect="non-scaling-stroke"></path>
+      </svg>
+    </div>
+    <div class="plate-meta">
+      <div class="meta-block">
+        <h3>Palette</h3>
+        <div class="chips">
+          <div class="chip" style="background:#1B2BE8; color:#F2F0E9;">field</div>
+          <div class="chip" style="background:#E8FF52; color:#0A0A0A;">signal</div>
+          <div class="chip" style="background:#F2F0E9; color:#0A0A0A;">bone</div>
+          <div class="chip" style="background:#0A0A0A; color:#F2F0E9;">rule</div>
+        </div>
+      </div>
+      <div class="meta-block">
+        <h3>Type</h3>
+        <p><b>Syne</b> — display, set enormous, tight, and often rotated.</p>
+        <p><b>JetBrains Mono</b> — test text, medium weight, generous line height.</p>
+      </div>
+      <div class="meta-block">
+        <h3>The Line here</h3>
+        <p>Not a chart — a gesture. One thick acid stroke cutting the whole composition. On finish the field collapses to bone and the stroke stays, becoming the axis your results hang from.</p>
+      </div>
+    </div>
+  </article>
+
+  <!-- ══ C ══ -->
+  <article class="plate pC">
+    <div class="plate-head">
+      <span class="idx">C</span>
+      <div>
+        <h2>Chamber</h2>
+        <p class="thesis">
+          Dark, but volumetric rather than flat — atmosphere, depth of field, a single cold light source. Words ahead of you recede into fog and resolve as you approach. <strong>The calmest and the most cinematic</strong>, and the only one where the depth does real work: blur removes the visual noise of text you are not typing yet.
+        </p>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="c-fog"></div>
+      <div class="c-inner">
+        <div class="c-chips">
+          <span class="c-chip on">words 25</span>
+          <span class="c-chip">punctuation</span>
+          <span class="c-chip">numbers</span>
+        </div>
+        <div class="c-text">
+          <span class="ok">the current of a</span> <span class="bad">sentance</span><span class="c-caret"></span> <span class="todo">carries</span> <span class="far">more than its words</span> <span class="far2">the pauses are</span>
+        </div>
+        <div class="c-stat">91.4<span>words per minute</span></div>
+      </div>
+      <svg class="c-trace" viewBox="0 0 1000 130" preserveAspectRatio="none" aria-hidden="true">
+        <path class="fill" d="" fill="rgba(126,226,208,.10)"></path>
+        <path class="line" d="" fill="none" stroke="#7EE2D0" stroke-width="1.5" vector-effect="non-scaling-stroke"></path>
+      </svg>
+    </div>
+    <div class="plate-meta">
+      <div class="meta-block">
+        <h3>Palette</h3>
+        <div class="chips">
+          <div class="chip" style="background:#070C0F; color:#EAF6F3;">void</div>
+          <div class="chip" style="background:#1D3A44; color:#EAF6F3;">fog</div>
+          <div class="chip" style="background:#7EE2D0; color:#0C1519;">light</div>
+          <div class="chip" style="background:#EAF6F3; color:#0C1519;">text</div>
+          <div class="chip" style="background:#FF7C86; color:#0C1519;">error</div>
+        </div>
+      </div>
+      <div class="meta-block">
+        <h3>Type</h3>
+        <p><b>Fraunces</b> at light weight — results and headline numbers, unexpectedly editorial.</p>
+        <p><b>JetBrains Mono</b> — test text on the focal plane.</p>
+      </div>
+      <div class="meta-block">
+        <h3>The Line here</h3>
+        <p>A filament of cold light in the fog. It is the only thing in the scene that emits rather than reflects. On finish the camera pulls back and the filament is revealed to have been your curve all along.</p>
+      </div>
+    </div>
+  </article>
+
+  <!-- ══ D ══ -->
+  <article class="plate pD">
+    <div class="plate-head">
+      <span class="idx">D</span>
+      <div>
+        <h2>Overprint</h2>
+        <p class="thesis">
+          Risograph print shop: two spot inks, real multiply overprint where they cross, halftone dots, everything a degree or two off register. <strong>The most tactile and the most human</strong> — it makes a keyboard site feel handmade. No typing site has ever looked like this, which is both the argument for it and the risk.
+        </p>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="d-half"></div>
+      <div class="d-block"></div>
+      <div class="d-inner">
+        <div class="d-stamp">bettertyping · edition 04 · 25 words</div>
+        <div class="d-text">
+          <span class="ok">the current of a</span> <span class="bad">sentance</span><span class="d-caret"></span> <span class="todo">carries more than its words</span>
+        </div>
+        <div class="d-num">91<small>wpm · 97% acc</small></div>
+      </div>
+      <svg class="d-trace" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true">
+        <path class="line" d="" fill="none" stroke="#FF3D9A" stroke-width="2.4" vector-effect="non-scaling-stroke"></path>
+      </svg>
+    </div>
+    <div class="plate-meta">
+      <div class="meta-block">
+        <h3>Palette</h3>
+        <div class="chips">
+          <div class="chip" style="background:#F5F2E9; color:#12142A;">stock</div>
+          <div class="chip" style="background:#FF3D9A; color:#F5F2E9;">ink 1</div>
+          <div class="chip" style="background:#1747C9; color:#F5F2E9;">ink 2</div>
+          <div class="chip" style="background:#12142A; color:#F5F2E9;">key</div>
+        </div>
+      </div>
+      <div class="meta-block">
+        <h3>Type</h3>
+        <p><b>Syne</b> — stamps, numerals, editioning marks.</p>
+        <p><b>DM Mono</b> — test text, letterpress-even and quiet against the noise.</p>
+      </div>
+      <div class="meta-block">
+        <h3>The Line here</h3>
+        <p>A pink ink pass printed over the blue. On finish the sheet lifts and turns, and the results are the reverse side of the same print.</p>
+      </div>
+    </div>
+  </article>
+
+  <section class="close">
+    <h2>My recommendation</h2>
+    <div class="rec">
+      <p><strong>A — Instrument</strong>, with the Chamber's depth borrowed for the results reveal and the analytics dashboard.</p>
+      <p>It is the only direction where the aesthetic argues the product's case. Everything else in the category is a dark screen with coloured letters; a site that looks like a calibrated measuring instrument says <em>we know things about your hands that they don't</em> before a single word is read. Light-first is the differentiator no competitor can copy without abandoning their own identity — and the paper world gives the Line somewhere real to live.</p>
+    </div>
+    <p><strong>If you want the loudest possible swing, take B.</strong> It is the most likely to stop a judge mid-scroll and the most likely to divide people. I would happily build it — it just asks you to accept that some visitors will find it exhausting to use daily, which for a site people open every morning is a genuine cost.</p>
+    <p style="margin-top:1.2rem"><strong>Tell me which letter, or tell me what's wrong with all four</strong> — "none of these, but C is closest and I want it warmer" is a completely useful answer. Nothing is built yet, so this is the cheapest possible moment to be difficult.</p>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  // One shared WPM series, rendered four ways.
+  var series = [], seed = 11;
+  function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+  for (var i = 0; i < 110; i++) {
+    var t = i / 109;
+    var base = 44 + 56 * (1 - Math.exp(-t * 4.4));
+    var dip = Math.exp(-Math.pow((t - 0.46) / 0.055, 2)) * 30;
+    var wob = Math.sin(t * 19.5) * 4 + (rnd() - 0.5) * 5;
+    series.push(Math.max(16, base - dip + wob));
+  }
+  var lo = 10, hi = 125;
+
+  function pathFor(w, h, top, bottom, close) {
+    var d = '', n = series.length;
+    for (var i = 0; i < n; i++) {
+      var x = (i / (n - 1)) * w;
+      var y = bottom - ((series[i] - lo) / (hi - lo)) * (bottom - top);
+      d += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(1);
+    }
+    if (close) d += 'L' + w + ' ' + h + 'L0 ' + h + 'Z';
+    return d;
+  }
+
+  function set(sel, w, h, top, bottom) {
+    var svg = document.querySelector(sel);
+    if (!svg) return;
+    var line = svg.querySelector('.line');
+    var fill = svg.querySelector('.fill');
+    if (line) line.setAttribute('d', pathFor(w, h, top, bottom, false));
+    if (fill) fill.setAttribute('d', pathFor(w, h, top, bottom, true));
+  }
+
+  set('.a-trace', 1000, 118, 16, 104);
+  set('.b-trace', 1000, 420, 120, 350);
+  set('.c-trace', 1000, 130, 22, 118);
+  set('.d-trace', 1000, 120, 18, 106);
+
+  // Draw-on, once, when each plate scrolls into view.
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduced && 'IntersectionObserver' in window) {
+    document.querySelectorAll('.stage svg .line').forEach(function (p) {
+      var len = p.getTotalLength();
+      p.style.strokeDasharray = len;
+      p.style.strokeDashoffset = len;
+    });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        var p = e.target.querySelector('svg .line');
+        if (p) {
+          p.style.transition = 'stroke-dashoffset 2.4s cubic-bezier(.22,.61,.36,1)';
+          p.style.strokeDashoffset = '0';
+        }
+        io.unobserve(e.target);
+      });
+    }, { threshold: 0.35 });
+    document.querySelectorAll('.stage').forEach(function (s) { io.observe(s); });
+  }
+})();
+</script>

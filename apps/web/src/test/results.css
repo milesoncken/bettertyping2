@@ -1,0 +1,126 @@
+.results {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  align-items: flex-start;
+  justify-content: center;
+  /* Occupies the box the text field did, so the trace's departure point is
+     stable and the flight lands where it is aimed. */
+  flex: 1;
+  min-height: 0;
+  padding-left: 4.6rem;
+  z-index: 1;
+}
+
+/* Everything except the chart arrives after the trace, so the eye follows the
+   Line first and reads the numbers second. */
+.reveal {
+  opacity: 0;
+  transform: translateY(6px);
+  animation: reveal 520ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+@keyframes reveal {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+
+.results-head {
+  display: flex;
+  gap: 1.25rem;
+  align-items: baseline;
+}
+
+.results-primary {
+  display: flex;
+  gap: 3rem;
+  flex-wrap: wrap;
+}
+
+.figure b {
+  display: block;
+  font-family: var(--f-label);
+  font-weight: 700;
+  font-size: clamp(2.2rem, 5.4vw, 3.4rem);
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+}
+
+.figure[data-lit] b {
+  color: var(--data-fast);
+}
+
+.figure .label {
+  display: block;
+  margin-top: 0.55rem;
+}
+
+/* ── The chart the Line becomes ── */
+.chart {
+  display: flex;
+  align-self: stretch;
+  height: 150px;
+  flex: none;
+  /* Room for the axis labels the trace draws to the left of its plot. */
+  padding-left: 2.2rem;
+}
+
+.chart-plot {
+  flex: 1;
+  min-width: 0;
+  border-left: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  opacity: 0;
+  animation: reveal 600ms 560ms ease-out forwards;
+}
+
+.results-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  align-items: flex-start;
+}
+
+.results-chars {
+  display: flex;
+  gap: 2rem;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.pair dd {
+  margin: 0.35rem 0 0;
+  font-family: var(--f-data);
+  font-size: 0.9rem;
+  color: var(--text-mid);
+}
+
+.chart-note {
+  margin: 0;
+  color: var(--text-dim);
+}
+
+.standing[data-tone="good"] {
+  color: var(--data-fast);
+}
+
+/* Semantic states are the one place a colour outside the ramp is warranted:
+   "not counted" must not read as a speed. */
+.standing[data-tone="hold"] {
+  color: var(--text);
+}
+
+.standing[data-tone="bad"] {
+  color: var(--data-slow);
+}
