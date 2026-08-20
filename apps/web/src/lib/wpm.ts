@@ -46,3 +46,25 @@ export function liveAccuracy(state: EngineState): number {
   }
   return total === 0 ? 100 : (correct / total) * 100;
 }
+
+/**
+ * Spectral ramp: slow → mid → fast. The only colour in the product, and it
+ * encodes speed wherever it appears — the trace, the caret, a board row.
+ */
+const RAMP_FULL_SCALE = 160;
+
+export function rampColor(wpm: number, alpha = 1, scale = RAMP_FULL_SCALE): string {
+  const stops: Array<[number, number, number]> = [
+    [0xff, 0x3d, 0xb8],
+    [0x7a, 0x6b, 0xff],
+    [0x35, 0xe8, 0xff],
+  ];
+  const x = Math.max(0, Math.min(1, wpm / scale)) * (stops.length - 1);
+  const i = Math.min(stops.length - 2, Math.floor(x));
+  const f = x - i;
+  const a = stops[i] ?? stops[0]!;
+  const b = stops[i + 1] ?? stops[stops.length - 1]!;
+  const mix = (n: 0 | 1 | 2): number => Math.round(a[n] + (b[n] - a[n]) * f);
+  return `rgba(${mix(0)}, ${mix(1)}, ${mix(2)}, ${alpha})`;
+}
+

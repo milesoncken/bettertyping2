@@ -1,6 +1,7 @@
 # bettertyping 2 — Product & Architecture Spec
 
-> Status: **draft for review**. Nothing below is built yet. Correct me before Stage 0 starts.
+> Status: **being built**. Stages 0–5 have landed; see the delivery plan in §10
+> for what each one actually shipped and where it differed from this document.
 
 ---
 
@@ -254,6 +255,12 @@ survive the gap between design and implementation.
 | Per-word latency prediction tags | Results review and replay scrubbing | 3, 5 |
 | `obs N · conf 0.93` model header | Analytics dashboard header | 6 |
 
+**Deferred out of Stage 5.** Per-word latency prediction tags and replay
+scrubbing are listed above against stages 3 and 5 and have landed in neither.
+Both want per-word timing models, which is the analytics engine's job — they move
+to Stage 6 rather than being approximated now. The band itself did land on the
+history charts, from the same function the Line uses.
+
 **Cold start.** Forecasts need roughly 10–20 completed tests before they mean
 anything. Every forecast surface therefore needs a designed empty state that
 reports how many tests remain before predictions unlock — not a blank rail.
@@ -302,13 +309,13 @@ reports how many tests remain before predictions unlock — not a blank rail.
 | **7** | Adaptive drills, XP / levels / streaks, daily challenge | Retention loop closed |
 | **8** | Six variants, settings, perf budget enforcement, a11y audit, launch | Ship |
 
-**Landed:** Stages 0, 1 and 2.
+**Landed:** Stages 0 through 5.
 
-- **0** — monorepo, strict TS, CI, lint. v1 app moved to `legacy/`, still runnable.
+- **0** — monorepo, strict TS, CI, lint. v1 app moved to `legacy/`, since deleted.
 - **1** — `engine` + `metrics`, 30 tests, replay determinism proven.
 - **2** — `apps/web`: test screen, the Line, results. Measured in Chromium at
   **p50 8.5 ms / p99 15.4 ms** keystroke-to-paint, **68 KB gzip** against a 100 KB
-  budget. `legacy/` is deleted once history and leaderboards land in Stage 5.
+  budget.
 - **3** — the signature moment: the trace detaches and flies into the results
   chart, E3's ±1σ confidence band, synthesised switch audio, and the lazy WebGL
   results backdrop. Test route **71 KB gzip**; the shader is a separate 1.4 KB
@@ -319,6 +326,33 @@ reports how many tests remain before predictions unlock — not a blank rail.
   server-replayed submission. 60 tests, including a full integration suite
   against real Postgres via PGlite with the committed migration applied. Setup in
   [`BACKEND.md`](BACKEND.md).
+
+- **5** — the read side: `/leaderboards`, `/u/:username`, `/me` and `/run/:id`,
+  behind a 91-line router and a single lazy chunk. 81 tests, 18 of them for the
+  read side. `legacy/` is deleted, which was this stage's stated condition — the
+  v1 app no longer does anything the rewrite does not.
+
+**What a board is, and why.** A board is a **(mode, length)** pair. Modifiers are
+a difficulty a player chooses, not a category: splitting boards by punctuation
+and numbers would quarter the population on every board and hand anyone willing
+to pick an unpopular combination a rank they did not earn. Each row reports its
+own modifiers instead. One row per player — their best — via `DISTINCT ON`, and
+`verification = 'verified'` is the only population any board, profile figure or
+trend line is computed over. A guest run cannot rank because there is nobody to
+attribute it to, not because a policy check rejects it.
+
+**A run is re-derivable, so it is auditable.** `/run/:id` does not read a stored
+chart. It joins the run to the issuance that produced it, replays the keystroke
+log through the same engine the browser ran, and recomputes the samples on
+request. Every row on a leaderboard therefore links to the evidence behind it,
+and the evidence is the thing the verifier judged rather than a second copy of
+the truth that can drift from it. Verified runs are public for that reason; a
+held or rejected run is visible only to the person who typed it.
+
+**Your own history tells you the truth about itself.** A flagged run appears in
+your history labelled *held*, a rejected one *not counted*. v1 let the client
+decide `isValid` and the board believed it; the opposite failure — a server that
+silently discards runs and never says so — would be its own kind of dishonest.
 
 **Confidence band, honestly scoped.** In Stage 3 the band is ±1σ of the player's
 own rhythm *within the run* — a centred rolling mean and standard deviation of

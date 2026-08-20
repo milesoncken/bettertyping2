@@ -1,0 +1,268 @@
+/*
+ * The read surfaces. Same instrument as the test screen — hairline rules,
+ * condensed micro-labels, monochrome chrome — with one difference: these pages
+ * scroll, because a history is longer than a viewport and a leaderboard has no
+ * business being three rows tall to avoid saying so.
+ */
+
+.page {
+  gap: 1.25rem;
+}
+
+.page-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* Room for the scrollbar so the content does not shift when one appears. */
+  padding-right: 0.6rem;
+}
+
+.page-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  align-items: flex-start;
+  padding-bottom: 2rem;
+}
+
+.page-stack > * {
+  width: 100%;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  flex-wrap: wrap;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  align-items: flex-start;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--rule);
+}
+
+.panel > h2 {
+  margin: 0;
+}
+
+/* ── Tables ── */
+.board {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--f-data);
+  font-size: 0.8rem;
+  color: var(--text-mid);
+}
+
+.board th {
+  text-align: left;
+  padding: 0 0.7rem 0.5rem;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+
+.board td {
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+
+.board tbody tr:hover td {
+  background: var(--panel);
+}
+
+/* Your own row, marked by a rule rather than by colour. */
+.board tbody tr[data-you] td {
+  background: var(--panel);
+  border-bottom-color: var(--rule-lit);
+}
+
+.board tbody tr[data-you] td:first-child {
+  box-shadow: inset 2px 0 0 var(--text-dim);
+}
+
+.board .num {
+  text-align: right;
+}
+
+.board .rank {
+  color: var(--text-dim);
+  width: 3rem;
+}
+
+.board .wpm {
+  font-size: 0.95rem;
+}
+
+.board .mods,
+.board .when {
+  color: var(--text-dim);
+}
+
+.player,
+a.when {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+
+.player {
+  font-family: var(--f-label);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+
+.player:hover,
+a.when:hover {
+  border-bottom-color: var(--rule-lit);
+}
+
+.standing-note {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* ── Profile header ── */
+.profile-head {
+  display: flex;
+  gap: 2.5rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.player-name {
+  margin: 0 0 0.4rem;
+  font-family: var(--f-label);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.totals {
+  display: flex;
+  gap: 2.2rem;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.total dd {
+  margin: 0.35rem 0 0;
+  font-family: var(--f-data);
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.total[data-lit] dd {
+  color: var(--data-fast);
+  font-size: 1.5rem;
+}
+
+/* ── Personal bests ── */
+.pb-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  width: 100%;
+}
+
+.pb {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.9rem 1.1rem;
+  min-width: 9.5rem;
+  border: 1px solid var(--rule);
+  text-decoration: none;
+  transition:
+    background 120ms linear,
+    border-color 120ms linear;
+}
+
+.pb:hover {
+  border-color: var(--rule-lit);
+}
+
+.pb:hover {
+  background: var(--panel);
+}
+
+.pb b {
+  font-family: var(--f-label);
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+/* ── Chart ── */
+.chart-figure {
+  margin: 0;
+  width: 100%;
+}
+
+.chart-host {
+  width: 100%;
+  border-left: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+.chart-svg {
+  display: block;
+}
+
+.chart-svg .grid {
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+
+.chart-svg .band {
+  fill: rgb(231 238 247 / 5.5%);
+  stroke: rgb(231 238 247 / 10%);
+  stroke-width: 1;
+}
+
+.chart-svg .trace {
+  fill: none;
+  stroke: var(--text-dim);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.chart-axis {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.6rem;
+  flex-wrap: wrap;
+}
+
+/* ── Nothing to show ── */
+.empty {
+  margin: 0;
+  max-width: 44ch;
+  line-height: 1.9;
+  color: var(--text-dim);
+}
+
+.empty[data-tone="bad"] {
+  color: var(--data-slow);
+}
+
+@media (max-width: 720px) {
+  .screen-inner.page {
+    padding: 1.1rem 1rem;
+  }
+
+  /* A table with seven columns does not fold; it scrolls. */
+  .board {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
