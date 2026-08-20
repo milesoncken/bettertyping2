@@ -11,6 +11,7 @@ import { Results } from "./Results.js";
 import { Account } from "./Account.js";
 import { useSubmission } from "./useSubmission.js";
 import { Perf } from "./Perf.js";
+import { Nav } from "../Nav.js";
 import { TheLine } from "./TheLine.js";
 import type { TracePoint } from "./TheLine.js";
 import { perfEnabled } from "../lib/latency.js";
@@ -125,13 +126,16 @@ export function TestScreen(): React.JSX.Element {
         />
 
         <header className="bar">
-          <div className="ident">
-            bettertyping<em>//</em>
-            {state.config.mode === "time"
-              ? `time ${state.config.duration}`
-              : `words ${state.config.count}`}
-            <em>·</em>
-            {state.config.punctuation ? "punct on" : "punct off"}
+          <div className="bar-left">
+            <div className="ident">
+              bettertyping<em>//</em>
+              {state.config.mode === "time"
+                ? `time ${state.config.duration}`
+                : `words ${state.config.count}`}
+              <em>·</em>
+              {state.config.punctuation ? "punct on" : "punct off"}
+            </div>
+            <Nav />
           </div>
           <div className="bar-right">
             <Account />

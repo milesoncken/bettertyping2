@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import type { EngineState, Phase } from "@bettertyping/engine";
-import { instantWpm } from "../lib/wpm.js";
+import { instantWpm, rampColor } from "../lib/wpm.js";
 import { elapsedOf } from "../lib/clock.js";
+import { bandOf } from "../lib/band.js";
 import "./line.css";
 
 /**
@@ -22,9 +23,6 @@ import "./line.css";
 const SAMPLE_EVERY_MS = 200;
 const FLIGHT_MS = 900;
 const FLIGHT_DELAY_MS = 140;
-/** Samples either side of a point when computing its confidence band. */
-const BAND_WINDOW = 4;
-
 export interface TracePoint {
   t: number;
   wpm: number;
@@ -53,51 +51,8 @@ export function scaleFor(points: readonly TracePoint[]): number {
   return Math.ceil((peak * 1.05) / SCALE_STEP) * SCALE_STEP;
 }
 
-/** Spectral ramp: slow → mid → fast. The only colour in the product. */
-export function rampColor(wpm: number, alpha = 1, scale = MIN_FULL_SCALE): string {
-  const stops: Array<[number, number, number]> = [
-    [0xff, 0x3d, 0xb8],
-    [0x7a, 0x6b, 0xff],
-    [0x35, 0xe8, 0xff],
-  ];
-  const x = Math.max(0, Math.min(1, wpm / scale)) * (stops.length - 1);
-  const i = Math.min(stops.length - 2, Math.floor(x));
-  const f = x - i;
-  const a = stops[i] ?? stops[0]!;
-  const b = stops[i + 1] ?? stops[stops.length - 1]!;
-  const mix = (n: 0 | 1 | 2): number => Math.round(a[n] + (b[n] - a[n]) * f);
-  return `rgba(${mix(0)}, ${mix(1)}, ${mix(2)}, ${alpha})`;
-}
-
 const easeOut = (x: number): number => 1 - Math.pow(1 - x, 3);
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
-
-/**
- * The ±1σ confidence band.
- *
- * In this stage it is computed from the player's own rhythm within the run: a
- * centred rolling mean and standard deviation of their speed. Where the trace
- * leaves the band, they broke their own pattern — and that overshoot is the
- * thing worth celebrating. Stage 6 swaps the source for a model fitted across
- * a player's history; the drawing code does not change.
- */
-function bandOf(points: readonly TracePoint[]): Array<{ hi: number; lo: number }> {
-  return points.map((_, i) => {
-    const from = Math.max(0, i - BAND_WINDOW);
-    const to = Math.min(points.length - 1, i + BAND_WINDOW);
-    let sum = 0;
-    let count = 0;
-    for (let j = from; j <= to; j++) {
-      sum += points[j]!.wpm;
-      count += 1;
-    }
-    const mean = sum / count;
-    let variance = 0;
-    for (let j = from; j <= to; j++) variance += (points[j]!.wpm - mean) ** 2;
-    const sd = Math.sqrt(variance / count);
-    return { hi: mean + sd, lo: Math.max(0, mean - sd) };
-  });
-}
 
 interface TheLineProps {
   stateRef: React.RefObject<EngineState>;
@@ -267,7 +222,7 @@ export function TheLine({
       // ── The confidence band, revealed as the chart lands ─────────────────
       const bandAlpha = Math.max(0, (flight - 0.45) / 0.55);
       if (bandAlpha > 0 && points.length > 2) {
-        const band = bandOf(points);
+        const band = bandOf(points.map((point) => point.wpm));
         ctx.beginPath();
         points.forEach((point, i) => {
           const x = xAt(point.t);

@@ -5,6 +5,7 @@ import type { FastifyInstance } from "fastify";
 import type { Db } from "./db.js";
 import type { Env } from "./env.js";
 import { registerAuthRoutes } from "./routes/auth.js";
+import { registerBoardRoutes } from "./routes/boards.js";
 import { registerTestRoutes } from "./routes/tests.js";
 
 export interface BuildOptions {
@@ -36,6 +37,7 @@ export async function buildApp(options: BuildOptions): Promise<FastifyInstance> 
     ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
   });
   registerTestRoutes(app, options.db);
+  registerBoardRoutes(app, options.db);
 
   return app;
 }

@@ -1,0 +1,35 @@
+.nav {
+  display: flex;
+  gap: 1.1rem;
+  align-items: baseline;
+}
+
+.nav-link {
+  font-family: var(--f-label);
+  font-weight: 700;
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-decoration: none;
+  padding-bottom: 2px;
+  border-bottom: 1px solid transparent;
+  transition: color 120ms linear;
+}
+
+.nav-link:hover {
+  color: var(--text-mid);
+}
+
+/* The current section is marked by a rule, not by colour: colour is data. */
+.nav-link[data-on] {
+  color: var(--text);
+  border-bottom-color: var(--rule-lit);
+}
+
+.boot {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}

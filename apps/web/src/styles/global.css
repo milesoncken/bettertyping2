@@ -42,6 +42,58 @@ button {
   color: var(--text-dim);
 }
 
+/* The one interactive primitive: a bordered micro-label. Used by the mode bar,
+   the account row and every board screen. */
+.chip {
+  font-family: var(--f-label);
+  font-weight: 700;
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 0.34rem 0.7rem;
+  border: 1px solid var(--rule);
+  color: var(--text-dim);
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
+}
+
+.chip:hover {
+  color: var(--text-mid);
+  border-color: var(--rule-lit);
+}
+
+/* Selection is shown with weight and contrast, never with the data ramp. */
+.chip[data-on] {
+  color: var(--text);
+  border-color: var(--text-dim);
+}
+
+.chip:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+a.chip {
+  display: inline-block;
+  text-decoration: none;
+}
+
+/* Semantic states — read by the results screen and every board alike. The one
+   place a colour outside the data ramp is warranted: "not counted" must not
+   read as a speed. */
+.standing[data-tone="good"] {
+  color: var(--data-fast);
+}
+
+.standing[data-tone="hold"] {
+  color: var(--text);
+}
+
+.standing[data-tone="bad"] {
+  color: var(--data-slow);
+}
+
 .tabular {
   font-variant-numeric: tabular-nums;
 }

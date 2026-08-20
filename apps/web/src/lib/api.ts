@@ -32,6 +32,19 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return (await response.json()) as T;
 }
 
+/**
+ * A read of the API that reports its own failure.
+ *
+ * The test flow below swallows errors on purpose — typing must never wait on a
+ * network. The board screens are the opposite: a leaderboard that silently
+ * renders empty when the server is down is a lie, so this throws and lets the
+ * screen say so.
+ */
+export async function apiGet<T>(path: string): Promise<T> {
+  if (!apiEnabled()) throw new Error("no_api");
+  return request<T>(path);
+}
+
 const localSeed = (): string => Math.random().toString(36).slice(2, 12);
 
 /**

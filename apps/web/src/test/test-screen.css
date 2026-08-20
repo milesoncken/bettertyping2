@@ -30,6 +30,12 @@
   margin-top: auto;
 }
 
+.bar-left {
+  display: flex;
+  align-items: baseline;
+  gap: 1.75rem;
+}
+
 .bar-right {
   display: flex;
   align-items: flex-start;

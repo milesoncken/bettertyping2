@@ -2,7 +2,7 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["legacy/**", "**/dist/**", "docs/**"] },
+  { ignores: ["**/dist/**", "docs/**"] },
   {
     // Plain scripts are not typechecked, so `no-undef` is doing real work here
     // and needs to know what the runtime provides.
