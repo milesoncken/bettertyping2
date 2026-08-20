@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { BigramStat, KeyStat, Keystroke, RollProfile } from "@bettertyping/analytics";
 
 /**
  * The wire. Every request body is parsed through these, so a malformed or
@@ -236,4 +237,69 @@ export interface RunResponse extends HistoryEntry {
   reasons: string[];
   chars: { correct: number; incorrect: number; extra: number; missed: number };
   samples: { t: number; wpm: number; rawWpm: number; errors: number }[];
+}
+
+/**
+ * ─── Analysis ───────────────────────────────────────────────────────────────
+ *
+ * The wire shapes here are the analytics package's own types, re-exported rather
+ * than re-declared. The server computes them and the browser draws them, so a
+ * second declaration would be a second definition of what a bigram is — free to
+ * drift, and silently wrong when it did.
+ */
+
+export type {
+  BigramClass,
+  BigramStat,
+  Finger,
+  Hand,
+  KeyStat,
+  Keystroke,
+  RollProfile,
+} from "@bettertyping/analytics";
+
+/**
+ * Runs before a player's per-key figures are worth reading.
+ *
+ * Below this the analysis is drawn, labelled, and honest about being early —
+ * SPEC §8 asks for a state that counts down to the unlock rather than a blank
+ * panel, and a blank panel is what a naive "hide until ready" would give.
+ */
+export const RUNS_FOR_CONFIDENCE = 10;
+
+export interface AnalysisResponse {
+  username: string;
+  /** Verified runs this analysis is folded from. */
+  runs: number;
+  /** Runs still to go before the figures settle. Zero once there are enough. */
+  runsUntilConfident: number;
+  keys: KeyStat[];
+  bigrams: BigramStat[];
+  rolls: RollProfile;
+  /**
+   * Whether the observed board agrees with QWERTY. False means the legends came
+   * from the player's own keystrokes and no key was guessed at.
+   */
+  qwertyLike: boolean;
+  /**
+   * Runs that contributed a hold. Zero means every run here predates dwell
+   * capture, and no dwell figure on any surface has anything behind it.
+   */
+  dwellRuns: number;
+  /** Recent verified runs, newest first, so a Ribbon can be chosen. */
+  recent: HistoryEntry[];
+}
+
+/**
+ * One run, keystroke by keystroke.
+ *
+ * Re-derived by replaying the stored log through the engine rather than read
+ * from a column, for the same reason `/tests/:id` recomputes its chart: the
+ * drawing and the verdict have to come from one piece of evidence.
+ */
+export interface RibbonResponse extends HistoryEntry {
+  username: string | null;
+  /** False for a run recorded before dwell capture; every dwell reads null. */
+  hasDwell: boolean;
+  keystrokes: Keystroke[];
 }

@@ -125,6 +125,26 @@ describe("backspace", () => {
 });
 
 describe("replay", () => {
+  it("carries hold times through, rather than quietly dropping them", () => {
+    // Dwell does not affect what a key typed, so the reducer ignores it — which
+    // made it easy to lose here. Everything downstream reads the replayed log,
+    // so a replay that dropped it would leave the field permanently empty with
+    // nothing failing to say so.
+    let live = createState({
+      mode: "words",
+      count: 2,
+      seed: "hold-fixture",
+      punctuation: false,
+      numbers: false,
+    });
+    "abc".split("").forEach((key, i) => {
+      live = applyKey(live, { key, code: `Key${key.toUpperCase()}`, t: 100 * i, hold: 40 + i });
+    });
+
+    const replayed = replay(live.config, live.events);
+    expect(replayed.events.map((event) => event.hold)).toEqual([40, 41, 42]);
+  });
+
   it("reconstructs an identical state from config and event log", () => {
     const live = type(start({ count: 4 }), "the quick brown fox and more text");
     const replayed = replay(live.config, live.events);

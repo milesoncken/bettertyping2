@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { Frame } from "../test/Chrome.js";
 import { Nav } from "../Nav.js";
 import { Account } from "../test/Account.js";
@@ -8,6 +8,18 @@ import { Leaderboard } from "./Leaderboard.js";
 import { Profile } from "./Profile.js";
 import { Run } from "./Run.js";
 import "./boards.css";
+
+/**
+ * The observatory is lazy inside a lazy chunk.
+ *
+ * It carries the keyboard geometry and three drawing surfaces, and nobody
+ * reading a leaderboard needs any of it. The test route never loaded this chunk
+ * to begin with; this keeps the boards from loading it either.
+ */
+const Analysis = lazy(async () => {
+  const module = await import("../analysis/Analysis.js");
+  return { default: module.Analysis };
+});
 
 /**
  * Everything that is not the test, in one lazily-loaded chunk.
@@ -46,6 +58,14 @@ function resolve(path: string): { title: string; body: React.JSX.Element } {
   if (path === "/leaderboards") return { title: "leaderboards", body: <Leaderboard /> };
   if (path === "/me") return { title: "profile", body: <Me /> };
 
+  if (path === "/analysis") return { title: "analysis", body: <MyAnalysis /> };
+
+  const analysed = /^\/analysis\/([^/]+)$/.exec(path);
+  if (analysed?.[1]) {
+    const username = decodeURIComponent(analysed[1]);
+    return { title: `${username} · analysis`, body: <Deferred><Analysis username={username} /></Deferred> };
+  }
+
   const user = /^\/u\/([^/]+)$/.exec(path);
   if (user?.[1]) {
     const username = decodeURIComponent(user[1]);
@@ -65,6 +85,28 @@ function resolve(path: string): { title: string; body: React.JSX.Element } {
  * would see of you, plus your history. One profile screen, two audiences.
  */
 function Me(): React.JSX.Element {
+  return (
+    <WhenSignedIn
+      prompt="sign in to keep a history. runs typed as a guest are scored and shown, but they are not recorded against anyone."
+      render={(username) => <Profile username={username} own />}
+    />
+  );
+}
+
+/**
+ * The signed-out state, designed once.
+ *
+ * Both `/me` and `/analysis` are about a person, and neither can say anything
+ * about a guest. The prompt differs because the reason differs; the shape does
+ * not, so it lives here rather than being written twice and drifting.
+ */
+function WhenSignedIn({
+  prompt,
+  render,
+}: {
+  prompt: string;
+  render: (username: string) => React.JSX.Element;
+}): React.JSX.Element {
   const [me, setMe] = useState<{ username: string } | null>(null);
   const [checked, setChecked] = useState(false);
 
@@ -82,7 +124,7 @@ function Me(): React.JSX.Element {
       <div className="page-stack">
         <p className="empty label">
           {apiEnabled()
-            ? "sign in to keep a history. runs typed as a guest are scored and shown, but they are not recorded against anyone."
+            ? prompt
             : "this build has no server configured, so there is nothing to record. typing still works."}
         </p>
         {apiEnabled() && (
@@ -94,7 +136,25 @@ function Me(): React.JSX.Element {
     );
   }
 
-  return <Profile username={me.username} own />;
+  return render(me.username);
+}
+
+/** Your own analysis, which is the same screen anyone else's resolves to. */
+function MyAnalysis(): React.JSX.Element {
+  return (
+    <WhenSignedIn
+      prompt="sign in to keep the keystrokes this page is built from. a guest run is scored and shown, but nothing is recorded against anyone."
+      render={(username) => (
+        <Deferred>
+          <Analysis username={username} />
+        </Deferred>
+      )}
+    />
+  );
+}
+
+function Deferred({ children }: { children: React.ReactNode }): React.JSX.Element {
+  return <Suspense fallback={<p className="empty label">loading</p>}>{children}</Suspense>;
 }
 
 function NotFound(): React.JSX.Element {

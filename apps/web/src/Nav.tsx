@@ -2,8 +2,8 @@ import { Link, useRouter } from "./lib/router.js";
 import "./nav.css";
 
 /**
- * The four places there are to be. Rendered on every screen, including the test
- * one, where it is deliberately the quietest thing in the frame.
+ * The places there are to be. Rendered on every screen, including the test one,
+ * where it is deliberately the quietest thing in the frame.
  */
 export function Nav(): React.JSX.Element {
   const { path } = useRouter();
@@ -20,6 +20,9 @@ export function Nav(): React.JSX.Element {
       </Link>
       <Link className="nav-link" to="/me" data-on={on("/me") || on("/u/") || undefined}>
         profile
+      </Link>
+      <Link className="nav-link" to="/analysis" data-on={on("/analysis") || undefined}>
+        analysis
       </Link>
     </nav>
   );

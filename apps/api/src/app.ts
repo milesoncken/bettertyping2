@@ -5,6 +5,7 @@ import type { FastifyInstance } from "fastify";
 import type { Db } from "./db.js";
 import type { Env } from "./env.js";
 import { registerAuthRoutes } from "./routes/auth.js";
+import { registerAnalysisRoutes } from "./routes/analysis.js";
 import { registerBoardRoutes } from "./routes/boards.js";
 import { registerTestRoutes } from "./routes/tests.js";
 
@@ -38,6 +39,7 @@ export async function buildApp(options: BuildOptions): Promise<FastifyInstance> 
   });
   registerTestRoutes(app, options.db);
   registerBoardRoutes(app, options.db);
+  registerAnalysisRoutes(app, options.db);
 
   return app;
 }

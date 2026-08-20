@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { applyKey, createState, expectedChar, finish } from "@bettertyping/engine";
 import type { EngineState, TestConfig } from "@bettertyping/engine";
 import { recordLatency } from "../lib/latency.js";
+import { clampHold, dwellKey, type DwellLog } from "../lib/dwell.js";
 import { issueTest, toEngineConfig } from "../lib/api.js";
 import { playKey } from "../lib/audio.js";
 import type { Profile } from "../lib/audio.js";
@@ -24,6 +25,11 @@ export interface TypingTest {
   stateRef: React.RefObject<EngineState>;
   /** Monotonic ms of the first keystroke, or null before the test starts. */
   originRef: React.RefObject<number | null>;
+  /**
+   * Hold times, filed on `keyup` and merged into the log only when the run is
+   * over. Never read during a render — see `lib/dwell.ts`.
+   */
+  dwellRef: React.RefObject<DwellLog>;
   restart: () => void;
   setConfig: (patch: Partial<TestConfig>) => void;
 }
@@ -41,6 +47,9 @@ export function useTypingTest(
   const originRef = useRef<number | null>(null);
   const pendingKeyAt = useRef<number | null>(null);
   const testIdRef = useRef<string | null>(null);
+  const dwellRef = useRef<DwellLog>(new Map());
+  /** Physical key → the raw timestamp it went down at, awaiting its `keyup`. */
+  const downAtRef = useRef<Map<string, number>>(new Map());
   /** Guards against a slow issuance landing after the player already restarted. */
   const dealRef = useRef(0);
 
@@ -57,6 +66,8 @@ export function useTypingTest(
     const deal = ++dealRef.current;
     testIdRef.current = null;
     originRef.current = null;
+    dwellRef.current.clear();
+    downAtRef.current.clear();
     setState(createState(next));
 
     void issueTest({
@@ -125,6 +136,7 @@ export function useTypingTest(
       const now = performance.now();
       if (originRef.current === null) originRef.current = now;
       pendingKeyAt.current = now;
+      downAtRef.current.set(event.code, now);
 
       // Sound is driven by the same expectation the engine is about to check,
       // so a wrong key sounds wrong on the frame it is pressed.
@@ -141,8 +153,29 @@ export function useTypingTest(
       );
     };
 
+    /**
+     * Dwell, filed off to the side.
+     *
+     * Deliberately not `setState`: this runs on every key release, and the test
+     * screen's whole claim is that a keystroke paints in one frame. A map write
+     * costs nothing and the holds are merged in once, after the run ends.
+     *
+     * A keydown the engine rejected still lands here and is simply never looked
+     * up, so nothing can fall out of step with the log.
+     */
+    const onKeyUp = (event: KeyboardEvent): void => {
+      const downAt = downAtRef.current.get(event.code);
+      if (downAt === undefined) return;
+      downAtRef.current.delete(event.code);
+      dwellRef.current.set(dwellKey(event.code, downAt), clampHold(performance.now() - downAt));
+    };
+
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+    };
   }, [restart, profileRef]);
 
   // ── Keystroke-to-paint measurement ────────────────────────────────────────
@@ -174,5 +207,5 @@ export function useTypingTest(
     return () => cancelAnimationFrame(frame);
   }, [state.phase, config.mode, config.duration]);
 
-  return { state, stateRef, originRef, testIdRef, restart, setConfig };
+  return { state, stateRef, originRef, testIdRef, dwellRef, restart, setConfig };
 }

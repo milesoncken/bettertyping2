@@ -10,6 +10,7 @@
     "dev:memory": "node build.mjs && node dist/dev-memory.js"
   },
   "dependencies": {
+    "@bettertyping/analytics": "workspace:*",
     "@bettertyping/engine": "workspace:*",
     "@bettertyping/metrics": "workspace:*",
     "@bettertyping/schema": "workspace:*",

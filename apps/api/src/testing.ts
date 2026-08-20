@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { eq } from "drizzle-orm";
@@ -18,9 +18,9 @@ import type { Env } from "./env.js";
  * no service has to be stood up to run it.
  */
 
-const MIGRATION = path.resolve(
+const MIGRATIONS_DIR = path.resolve(
   import.meta.dirname,
-  "../../../packages/schema/migrations/0000_init.sql",
+  "../../../packages/schema/migrations",
 );
 
 export const TEST_ENV: Env = {
@@ -48,9 +48,15 @@ export async function createTestApp(
   envOverrides?: Partial<Env>,
 ): Promise<TestHarness> {
   const client = new PGlite();
-  const sql = await readFile(MIGRATION, "utf8");
-  // drizzle-kit separates statements with a marker; PGlite runs them as a script.
-  await client.exec(sql.replaceAll("--> statement-breakpoint", ""));
+  // Every committed migration, in the same order the deploy applies them — so a
+  // migration that is wrong is wrong in the suite too, rather than only in
+  // production.
+  const files = (await readdir(MIGRATIONS_DIR)).filter((f) => f.endsWith(".sql")).sort();
+  for (const file of files) {
+    const sql = await readFile(path.join(MIGRATIONS_DIR, file), "utf8");
+    // drizzle-kit separates statements with a marker; PGlite runs them as a script.
+    await client.exec(sql.replaceAll("--> statement-breakpoint", ""));
+  }
   const db = drizzle(client, { schema }) as unknown as Db;
   const env: Env = { ...TEST_ENV, ...envOverrides };
   const app = await buildApp({ db, env, ...(fetchImpl ? { fetchImpl } : {}) });
@@ -60,7 +66,8 @@ export async function createTestApp(
     db,
     reset: async () => {
       await client.exec(
-        "TRUNCATE users, oauth_accounts, sessions, issued_tests, tests, personal_bests CASCADE",
+        "TRUNCATE users, oauth_accounts, sessions, issued_tests, tests, personal_bests, " +
+          "key_stats, bigram_stats CASCADE",
       );
     },
     close: async () => {
@@ -101,9 +108,49 @@ export function cookieFrom(headers: unknown, name: string): string | null {
  */
 export const HUMAN_CADENCE = [88, 145, 102, 63, 197, 119, 74, 156, 91, 128, 210, 82];
 
+/**
+ * The physical key that types a character on ANSI QWERTY.
+ *
+ * Fixtures used to emit `Key_x`, which no keyboard has. That was invisible while
+ * nothing read `code`; the analytics read nothing else, so a fixture that lies
+ * about the board would exercise none of it.
+ */
+export function physicalCode(char: string): string {
+  const named: Record<string, string> = {
+    " ": "Space",
+    ",": "Comma",
+    ".": "Period",
+    ";": "Semicolon",
+    "'": "Quote",
+    "/": "Slash",
+    "-": "Minus",
+    "=": "Equal",
+    "[": "BracketLeft",
+    "]": "BracketRight",
+    "\\": "Backslash",
+    "`": "Backquote",
+  };
+  if (named[char]) return named[char] as string;
+  if (/^[a-zA-Z]$/.test(char)) return `Key${char.toUpperCase()}`;
+  if (/^[0-9]$/.test(char)) return `Digit${char}`;
+  // Shifted punctuation shares its unshifted key; anything else is off-board.
+  const shifted: Record<string, string> = {
+    "!": "Digit1", "@": "Digit2", "#": "Digit3", "$": "Digit4", "%": "Digit5",
+    "^": "Digit6", "&": "Digit7", "*": "Digit8", "(": "Digit9", ")": "Digit0",
+    "?": "Slash", ":": "Semicolon", '"': "Quote", "<": "Comma", ">": "Period",
+  };
+  return shifted[char] ?? "Unidentified";
+}
+
 export function playTest(
   config: TestConfig,
-  options: { cadence?: readonly number[]; chars?: number; fractional?: boolean } = {},
+  options: {
+    cadence?: readonly number[];
+    chars?: number;
+    fractional?: boolean;
+    /** Set false to simulate a run recorded before dwell capture existed. */
+    holds?: boolean;
+  } = {},
 ): EngineState {
   const cadence = options.cadence ?? HUMAN_CADENCE;
   let state = createState(config);
@@ -119,8 +166,11 @@ export function playTest(
     i += 1;
     state = applyKey(state, {
       key: char,
-      code: `Key_${char}`,
+      code: physicalCode(char),
       t: options.fractional === true ? t + (i % 7) / 9 : t,
+      // A hold that varies the way a hand does, so dwell has something real to
+      // measure and the verifier's uniform-hold check has something to pass.
+      ...(options.holds === false ? {} : { hold: 55 + (i % 5) * 9 }),
     });
   }
   return state;

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { EngineState } from "@bettertyping/engine";
 import { computeResults } from "@bettertyping/metrics";
 import { submitTest } from "../lib/api.js";
+import { eventsWithDwell, type DwellLog } from "../lib/dwell.js";
 
 /**
  * Sends a finished run to the server and holds its verdict.
@@ -22,6 +23,8 @@ export type SubmissionState =
 export function useSubmission(
   state: EngineState,
   testIdRef: React.RefObject<string | null>,
+  /** Holds collected on `keyup`, merged into the log here and nowhere earlier. */
+  dwellRef: React.RefObject<DwellLog>,
 ): SubmissionState {
   const [submission, setSubmission] = useState<SubmissionState>({ status: "idle" });
   const sentRef = useRef<string | null>(null);
@@ -51,7 +54,9 @@ export function useSubmission(
     const results = computeResults(state);
     setSubmission({ status: "submitting" });
 
-    void submitTest(testId, state.events, {
+    // The one place dwell joins the log: after the run, on the way out. The
+    // server stores what it verifies, so this is also what the analytics read.
+    void submitTest(testId, eventsWithDwell(state, dwellRef.current), {
       wpm: results.wpm,
       accuracy: results.accuracy,
     }).then((outcome) => {
@@ -68,7 +73,7 @@ export function useSubmission(
       }
       setSubmission({ status: outcome.verification, reasons: outcome.reasons });
     });
-  }, [state, testIdRef, reset]);
+  }, [state, testIdRef, dwellRef, reset]);
 
   return submission;
 }

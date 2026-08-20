@@ -1,6 +1,6 @@
 # bettertyping 2 — Product & Architecture Spec
 
-> Status: **being built**. Stages 0–5 have landed; see the delivery plan in §10
+> Status: **being built**. Stages 0–6 have landed; see the delivery plan in §10
 > for what each one actually shipped and where it differed from this document.
 
 ---
@@ -70,7 +70,7 @@ bettertyping2/
 ├── packages/
 │   ├── engine/              Typing engine. Pure TS. Zero deps. No DOM, no React.
 │   ├── metrics/             WPM / accuracy / consistency. Shared client + server.
-│   ├── analytics/           Bigrams, error taxonomy, weakness ranking, drill generation.
+│   ├── analytics/           Keyboard geometry, bigrams, error taxonomy, rollups.
 │   ├── schema/              Drizzle schema + Zod contracts + shared types.
 │   └── ui/                  Design tokens, primitives, motion system.
 ├── docs/
@@ -179,7 +179,7 @@ Leaderboards read `verified` only. Guest tests never reach a leaderboard.
 
 Everything below is computed, not guessed. No model calls.
 
-- **Per key:** median latency, error rate, sample count. *(Median — not v1's "worst single keystroke".)*
+- **Per key:** median latency, miss rate, sample count. *(Median — not v1's "worst single keystroke".)*
 - **Per bigram:** transition latency. This is the real signal: `th` is fast, `yp` is slow, and your slow set is personal.
 - **Error taxonomy:** substitution (and whether the wrong key was physically adjacent), transposition (rolled out of order), insertion, omission, capitalisation.
 - **Biomechanics:** hand balance, finger load, same-finger bigram frequency, alternation ratio.
@@ -187,6 +187,53 @@ Everything below is computed, not guessed. No model calls.
 - **Weakness ranking → drill generation:** synthesize word lists weighted toward your worst bigrams, drawn from real dictionary words so drills read as English rather than gibberish.
 
 This is the pillar's entire justification: no other site keeps per-keystroke timing at this fidelity, so no other site can do this.
+
+### What Stage 6 settled
+
+**Everything is keyed on the physical key.** `KeyboardEvent.code`, never the
+character. A claim about fingers, hands or rolls is only true if it is made about
+position — so the Atlas is the board under your hands whatever layout is mapped
+onto it.
+
+**Layouts are observed, not configured.** Every keystroke is a `(code, key)`
+pair, and a *wrong* key is evidence too, since it still printed what it prints.
+So the character each key produces is learned from the player's own log and
+stored on the rollup row. A Dvorak player gets a Dvorak Atlas with no table
+shipped for it and no settings toggle to get wrong. Where a needed character has
+never been typed, a QWERTY guess fills in — but only when the keys already seen
+agree with QWERTY, so the guess is never applied to someone it would be wrong
+about.
+
+**Dwell is separated from flight.** `flight` is the gap since the previous key
+went down — the cost of *getting to* a key. `dwell` is how long it stayed down.
+Two players at the same speed can have opposite profiles, and neither number is
+visible in a WPM figure. Dwell is captured on `keyup` into a side-channel map and
+merged into the log once, after the run: nothing re-renders on a key release,
+because the test screen's claim is a keystroke painting in one frame.
+
+**Medians do not merge, so rollups store the mean of per-run medians.** Not a
+running mean over raw samples, which would hand one thirty-second pause the power
+to redefine a key. Each run's median has already discarded that run's outliers,
+and their mean merges by addition — which is all a `SET x = x + excluded.x`
+upsert can do. Two runs submitted at once therefore cannot lose an update to each
+other the way a read-modify-write would.
+
+**A pause is not a transition.** Gaps over 1.5 s are left out of every latency
+median while the pair is still counted. Someone glancing away mid-run should not
+have that second charged to the `he` bigram.
+
+**A correction breaks the bigram chain.** Pairs are taken from adjacent entries in
+the raw log, so a backspace between two characters ends the run of them. The time
+to type `e` after fixing a mistake is the cost of the correction, not of the
+movement, and averaging the two hides both.
+
+**Sample counts travel with every figure.** A key or pair below eight
+observations is drawn as *unmeasured* rather than given a colour it has not
+earned — the difference between "average" and "we do not know".
+
+**Deferred to Stage 7.** Drill generation, and the forecast model that Stage 3
+promised would replace the within-run ±1σ band. The band's source still has to
+change and its drawing code still does not.
 
 ---
 
@@ -309,7 +356,7 @@ reports how many tests remain before predictions unlock — not a blank rail.
 | **7** | Adaptive drills, XP / levels / streaks, daily challenge | Retention loop closed |
 | **8** | Six variants, settings, perf budget enforcement, a11y audit, launch | Ship |
 
-**Landed:** Stages 0 through 5.
+**Landed:** Stages 0 through 6.
 
 - **0** — monorepo, strict TS, CI, lint. v1 app moved to `legacy/`, since deleted.
 - **1** — `engine` + `metrics`, 30 tests, replay determinism proven.
@@ -331,6 +378,13 @@ reports how many tests remain before predictions unlock — not a blank rail.
   behind a 91-line router and a single lazy chunk. 81 tests, 18 of them for the
   read side. `legacy/` is deleted, which was this stage's stated condition — the
   v1 app no longer does anything the rewrite does not.
+
+- **6** — `packages/analytics`, the `key_stats` / `bigram_stats` rollups, and the
+  `/analysis` observatory: the Rhythm Ribbon, the Atlas and the Transition Rose.
+  **Dwell capture landed with it** — `hold` had been declared in the engine, the
+  wire contract and the verifier since Stage 4, and never once written, because
+  the app bound only `keydown`. 126 tests. Test route **73.4 KB gzip** against
+  the 100 KB budget, +0.28 KB over the branch point.
 
 **What a board is, and why.** A board is a **(mode, length)** pair. Modifiers are
 a difficulty a player chooses, not a category: splitting boards by punctuation
